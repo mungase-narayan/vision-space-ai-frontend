@@ -16,26 +16,21 @@ const useStartStreaming = () => {
       updateTab({ isConversation: true }, tab.id);
       updateTab({ role: "assistant", content: "" }, tab.id, "CHAT");
 
-      const response = await fetch(`${URLS.AI_BASE_URL}/get-chat-response`, {
+      const lastUserMessage = Array.isArray(data?.chat)
+        ? data.chat[data.chat.length - 1]?.content
+        : data?.message;
+
+      const response = await fetch(`${URLS.AI_BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ message: lastUserMessage || "" }),
       });
 
-      if (!response.ok || !response.body) throw new Error("Streaming failed");
-      setStreamId(response.headers.get("Stream-Id"));
-
-      const stream = response.body.pipeThrough(new TextDecoderStream());
-      const reader = stream.getReader();
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        content += value;
-        updateLastChat({ role: "assistant", content }, tab.id);
-      }
+      if (!response.ok) throw new Error("Request failed");
+      const result = await response.json();
+      content = result?.reply ?? "";
     } catch (error) {
-      toast.error(error?.message || "Streaming error");
+      toast.error(error?.message || "Request error");
     } finally {
       updateLastChat(
         {

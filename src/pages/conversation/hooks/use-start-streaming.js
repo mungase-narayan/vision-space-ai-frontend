@@ -21,7 +21,7 @@ const useStartStreaming = () => {
   } = useConversation();
   const { setTabs, refetchAIConversations } = useConversationLaout();
   const { updateConversation } = useUpdateConversation({
-    callAfterSuccess: () => {},
+    callAfterSuccess: () => { },
   });
   const { createConversation } = useCreateConversation({
     callAfterSuccess: () => {
@@ -90,29 +90,21 @@ const useStartStreaming = () => {
       setIsConversation(true);
       setChats((prev) => [...prev, { role: "assistant", content: "" }]);
 
-      const response = await fetch(`${URLS.AI_BASE_URL}/get-chat-response`, {
+      const lastUserMessage = Array.isArray(data?.chat)
+        ? data.chat[data.chat.length - 1]?.content
+        : data?.message;
+
+      const response = await fetch(`${URLS.AI_BASE_URL}/chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify({ message: lastUserMessage || "" }),
       });
 
-      if (!response.ok || !response.body) throw new Error("Streaming failed");
-      setStreamId(response.headers.get("Stream-Id"));
-
-      const stream = response.body.pipeThrough(new TextDecoderStream());
-      const reader = stream.getReader();
-
-      while (true) {
-        const { value, done } = await reader.read();
-        if (done) break;
-        content += value;
-        setChats((prev) => [
-          ...prev.slice(0, prev.length - 1),
-          { role: "assistant", content },
-        ]);
-      }
+      if (!response.ok) throw new Error("Request failed");
+      const result = await response.json();
+      content = result?.reply ?? "";
     } catch (error) {
-      toast.error(error?.message || "Streaming error");
+      toast.error(error?.message || "Request error");
     } finally {
       handleNewAssistantMessage(content);
     }

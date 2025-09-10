@@ -61,9 +61,9 @@ const ChatsLayout = () => {
     },
   });
   const { updateChatAsync, updateChat: updateChatAPI } = useUpdateChat({
-    fn: () => {},
+    fn: () => { },
   });
-  const { generateTabName } = useGenerateTabName({ fn: () => {} });
+  const { generateTabName } = useGenerateTabName({ fn: () => { } });
   const { deleteChat, isPending: isDeletingChat } = useDeleteChat({
     fn: () => {
       refetchChats();
@@ -389,12 +389,12 @@ const ChatsLayout = () => {
           ...models,
           ...(isDisplayAllModels
             ? [
-                {
-                  name: "All",
-                  models: modelList,
-                  defaultModel: "openai/gpt-4o-mini",
-                },
-              ]
+              {
+                name: "All",
+                models: modelList,
+                defaultModel: "openai/gpt-4o-mini",
+              },
+            ]
             : []),
         ],
       }}

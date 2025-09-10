@@ -1,17 +1,32 @@
-import { URLS } from "@/constants";
-import { cn } from "@/lib/utils";
+import { siteConfigs } from "@/configs";
+import { Anchor } from "lucide-react";
 
-const Logo = ({ className }) => {
+const Logo = () => {
   return (
     <div
-      className={cn("font-bold flex items-center justify-center", className)}
+      className="
+        font-bold text-lg sm:text-xl tracking-tight
+        flex items-center justify-center space-x-2.5
+      "
     >
-      <img className="dark:hidden h-[45px]" src={URLS.LOGO_URL} alt="logo" />
-      <img
-        className="hidden dark:block  h-[45px]"
-        src={URLS.DARK_LOGO_URL}
-        alt="logo"
-      />
+      <div
+        className="
+          w-8 h-8 flex items-center justify-center
+          rounded-md bg-gradient-to-tr from-indigo-500 to-purple-500
+          text-white shadow-sm
+        "
+      >
+        <Anchor className="w-5 h-5" />
+      </div>
+      <p
+        className="
+          bg-gradient-to-r from-indigo-600 to-purple-600
+          dark:from-indigo-400 dark:to-purple-400
+          bg-clip-text text-transparent
+        "
+      >
+        {siteConfigs.name}
+      </p>
     </div>
   );
 };

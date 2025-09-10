@@ -62,12 +62,21 @@ const apis = {
       isFormData: true,
     }),
   generateTabName: ({ authToken, data }) =>
-    aiRequest({
-      data,
-      authToken,
-      method: "POST",
-      url: urls.generateTabName,
-    }),
+    // Local tab name generation since AI server exposes only /chat
+    (async () => {
+      const chats = Array.isArray(data?.chat) ? data.chat : [];
+      const lastUser = [...chats]
+        .reverse()
+        .find((c) => c?.role === "user" && typeof c?.content === "string");
+      const raw = lastUser?.content || "New Chat";
+      const firstSentence = raw.split(/[\.!?\n]/)[0] || raw;
+      const words = firstSentence.trim().split(/\s+/).slice(0, 8).join(" ");
+      const title = words
+        .replace(/\s+/g, " ")
+        .trim()
+        .replace(/^.{1}/, (c) => c.toUpperCase());
+      return { data: { response: title || "New Chat" } };
+    })(),
   getImageModelList: () =>
     aiRequest({
       method: "GET",
