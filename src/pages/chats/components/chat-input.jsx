@@ -113,8 +113,8 @@ export default function ChatInput() {
         ...(tab.webSearch
           ? { allFiles: [] }
           : tab.isImageGenerate
-          ? { allFiles: files.filter((f) => f.type === "image") }
-          : { allFiles: files }),
+            ? { allFiles: files.filter((f) => f.type === "image") }
+            : { allFiles: files }),
       },
       tab.id,
       "CHAT"
@@ -252,29 +252,29 @@ export default function ChatInput() {
   }, [tab.id]);
 
   return (
-    <div className="border-t border-border bg-background p-4">
+    <div className="p-4">
       <div className="max-w-5xl mx-auto">
         {!!files.length && !tab.webSearch && (
           <div className="w-full overflow-x-auto flex items-center gap-3 pb-2 hide-scrollbar">
             {tab.isImageGenerate
               ? files
-                  .filter((f) => f.type === "image")
-                  .map((file) => (
-                    <DisplayChatFiles
-                      key={file.id}
-                      id={file.id}
-                      data={file}
-                      showRemove={true}
-                    />
-                  ))
-              : files.map((file) => (
+                .filter((f) => f.type === "image")
+                .map((file) => (
                   <DisplayChatFiles
                     key={file.id}
                     id={file.id}
                     data={file}
                     showRemove={true}
                   />
-                ))}
+                ))
+              : files.map((file) => (
+                <DisplayChatFiles
+                  key={file.id}
+                  id={file.id}
+                  data={file}
+                  showRemove={true}
+                />
+              ))}
           </div>
         )}
 
@@ -304,8 +304,8 @@ export default function ChatInput() {
           </div>
         ) : null}
 
-        <div className="flex items-end">
-          <div className="flex-1 relative border border-border rounded-lg">
+        <div className="flex  items-end">
+          <div className="flex-1 shadow-[0_20px_50px_rgba(6,_182,_212,_0.4)] hover:shadow-[0_25px_60px_rgba(6,_182,_212,_0.6)] transition-shadow duration-300  relative border border-border rounded-lg">
             <Textarea
               onPaste={handlePaste}
               disabled={fileLoading}
@@ -373,11 +373,10 @@ export default function ChatInput() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-8 w-8 rounded-full hidden ${
-                  tab.isImageGenerate
-                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
-                    : ""
-                }`}
+                className={`h-8 w-8 rounded-full hidden ${tab.isImageGenerate
+                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
+                  : ""
+                  }`}
                 title="Generate image with AI"
                 onClick={() => {
                   updateTab(
@@ -396,11 +395,10 @@ export default function ChatInput() {
               <Button
                 variant="ghost"
                 size="icon"
-                className={`h-8 w-8 rounded-full ${
-                  tab.webSearch
-                    ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
-                    : ""
-                }`}
+                className={`h-8 w-8 rounded-full ${tab.webSearch
+                  ? "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 hover:bg-blue-100 hover:text-blue-600 dark:hover:bg-blue-900/30 dark:hover:text-blue-400"
+                  : ""
+                  }`}
                 title="Search the internet"
                 onClick={() =>
                   updateTab(

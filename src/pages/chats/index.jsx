@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import ChatMessage from "./components/chat-message";
 import ChatInput from "./components/chat-input";
 import { ChatContext } from "./providers/chat-provider";
+import { GlowingOrb } from "@/components/shared/glob-orbit";
 
 const Chats = ({ tab }) => {
   const [userPrompt, setUserPrompt] = useState("");
@@ -82,6 +83,9 @@ const Chats = ({ tab }) => {
           ) : (
             <div className="flex-1 flex flex-col items-center pt-10 sm:justify-center p-4">
               <div className="max-w-3xl text-center">
+                <div className="flex justify-center mb-4">
+                  <GlowingOrb />
+                </div>
                 <h2 className="sm:text-2xl font-bold mb-2">
                   What's on your mind today?
                 </h2>
@@ -92,10 +96,10 @@ const Chats = ({ tab }) => {
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {[
-                    "Explain quantum computing",
-                    "Write a short story",
-                    "Help me debug this code",
-                    "Summarize this article",
+                    "What is an Argo float?",
+                    "Argo float story",
+                    "Read Argo float data",
+                    "Argo float article summary",
                   ].map((suggestion, index) => (
                     <button
                       key={index}

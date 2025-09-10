@@ -20,6 +20,7 @@ import useStopConversation from "../hooks/use-stop-conversation";
 
 import { useApp } from "@/providers/app-provider";
 import { SelectModel } from "./select-model";
+import { GlowingOrb } from "@/components/shared/glob-orbit";
 
 const ChatInput = () => {
   const { openAIKey } = useAuth();
@@ -80,11 +81,11 @@ const ChatInput = () => {
         content: userPrompt,
         ...(!tab.webSearch
           ? {
-              files: result,
-              extension,
-              type,
-              allFiles: files,
-            }
+            files: result,
+            extension,
+            type,
+            allFiles: files,
+          }
           : { files: [], extension: [], type: [], allFiles: [] }),
       },
       tabId,
@@ -99,7 +100,10 @@ const ChatInput = () => {
 
   if (!tab.chats.length) {
     return (
-      <div className="flex items-center flex-col gap-4 justify-center h-[80vh]">
+      <div className="flex items-center justify-center flex-col gap-4 h-[80vh]">
+        <div className="flex justify-center mb-4">
+          <GlowingOrb />
+        </div>
         <h1 className="font-bold text-xl md:text-3xl">
           What's on your mind today?
         </h1>
@@ -193,20 +197,8 @@ const ChatInputBase = ({ isPending, handelConversation }) => {
           <div className="w-full overflow-x-auto flex items-center gap-3 pb-2 hide-scrollbar">
             {tab.isImageGenerate
               ? files
-                  .filter((file) => file?.file?.type?.includes("image"))
-                  .map((file) => (
-                    <ChatFiles
-                      id={file.id}
-                      file={file.file}
-                      key={file.id}
-                      type={
-                        file?.file?.type?.includes("image") ? "image" : "file"
-                      }
-                      base64={file.text}
-                      showRemove={true}
-                    />
-                  ))
-              : files.map((file) => (
+                .filter((file) => file?.file?.type?.includes("image"))
+                .map((file) => (
                   <ChatFiles
                     id={file.id}
                     file={file.file}
@@ -217,7 +209,19 @@ const ChatInputBase = ({ isPending, handelConversation }) => {
                     base64={file.text}
                     showRemove={true}
                   />
-                ))}
+                ))
+              : files.map((file) => (
+                <ChatFiles
+                  id={file.id}
+                  file={file.file}
+                  key={file.id}
+                  type={
+                    file?.file?.type?.includes("image") ? "image" : "file"
+                  }
+                  base64={file.text}
+                  showRemove={true}
+                />
+              ))}
           </div>
         )}
         <textarea
@@ -266,7 +270,7 @@ const ChatInputBase = ({ isPending, handelConversation }) => {
               className={cn(
                 "cursor-pointer text-foreground flex items-center gap-1",
                 (files.length >= 5 || tab.webSearch || tab.isImageGenerate) &&
-                  "cursor-not-allowed"
+                "cursor-not-allowed"
               )}
               disabled={
                 files.length >= 5 || tab.webSearch || tab.isImageGenerate
@@ -359,7 +363,7 @@ const ChatInputBase = ({ isPending, handelConversation }) => {
                 className={cn(
                   "bg-muted-foreground/20 rounded-full p-2 cursor-pointer text-muted-foreground",
                   !userPrompt &&
-                    "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
+                  "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
                 )}
               >
                 <ArrowUp size={15} />

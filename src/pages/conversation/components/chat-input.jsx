@@ -18,6 +18,7 @@ import useStartStreaming from "../hooks/use-start-streaming";
 import { useConversation } from "../provider/conversation-provider";
 import useUpdateConversation from "../hooks/use-update-conversation";
 import { useConversationLaout } from "../provider/conversation-layout-provider";
+import { GlowingOrb } from "@/components/shared/glob-orbit";
 
 const ChatInput = () => {
   const { openAIKey, user } = useAuth();
@@ -77,11 +78,11 @@ const ChatInput = () => {
         content: userPrompt,
         ...(!webSearch
           ? {
-              files: result,
-              extension,
-              type,
-              allFiles: files,
-            }
+            files: result,
+            extension,
+            type,
+            allFiles: files,
+          }
           : { files: [], extension: [], type: [], allFiles: [] }),
       },
     ]);
@@ -102,6 +103,9 @@ const ChatInput = () => {
   if (!chats.length) {
     return (
       <div className="flex items-center flex-col gap-4 justify-center h-[80vh]">
+        <div className="flex justify-center mb-4">
+          <GlowingOrb />
+        </div>
         <h1 className="font-bold text-xl md:text-3xl">
           What's on your mind today?
         </h1>
@@ -135,7 +139,7 @@ const ChatInputBase = ({ isPending, handelConversation }) => {
   } = useConversation();
   const { mutate } = useStopStreaming();
   const { updateConversation } = useUpdateConversation({
-    callAfterSuccess: () => {},
+    callAfterSuccess: () => { },
   });
 
   const textareaRef = useRef(null);
@@ -332,7 +336,7 @@ const ChatInputBase = ({ isPending, handelConversation }) => {
                 className={cn(
                   "bg-muted-foreground/20 rounded-full p-2 cursor-pointer text-muted-foreground",
                   !userPrompt &&
-                    "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
+                  "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
                 )}
               >
                 <ArrowUp size={15} />

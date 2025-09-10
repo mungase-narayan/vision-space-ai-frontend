@@ -24,6 +24,7 @@ import { useChatContext } from "../provider";
 import { useStartStreaming, useStopStreaming, useUploadFile } from "../hooks";
 import { SelectModel } from "./select-model";
 import { useApp } from "@/providers/app-provider";
+import { GlowingOrb } from "@/components/shared/glob-orbit";
 
 const ChatInput = () => {
   const { openAIKey, user } = useAuth();
@@ -82,13 +83,13 @@ const ChatInput = () => {
         ...(tab.webSearch
           ? { files: [], extension: [], type: [], allFiles: [] }
           : tab.isImageGenerate
-          ? {
+            ? {
               files: result,
               extension,
               type,
               allFiles: files.filter((f) => f.type === "image"),
             }
-          : {
+            : {
               files: result,
               extension,
               type,
@@ -108,6 +109,9 @@ const ChatInput = () => {
   if (!tab.chats.length) {
     return (
       <div className="flex items-center flex-col gap-4 justify-center h-[80vh]">
+        <div className="flex justify-center mb-4">
+          <GlowingOrb />
+        </div>
         <h1 className="font-bold text-xl md:text-3xl">
           What's on your mind today?
         </h1>
@@ -201,13 +205,13 @@ const ChatInputBase = ({ handelConversation }) => {
           <div className="w-full overflow-x-auto flex items-center gap-3 pb-2 hide-scrollbar">
             {tab.isImageGenerate
               ? files
-                  .filter((f) => f.type === "image")
-                  .map((file) => (
-                    <ChatFiles id={file.id} data={file} showRemove={true} />
-                  ))
-              : files.map((file) => (
+                .filter((f) => f.type === "image")
+                .map((file) => (
                   <ChatFiles id={file.id} data={file} showRemove={true} />
-                ))}
+                ))
+              : files.map((file) => (
+                <ChatFiles id={file.id} data={file} showRemove={true} />
+              ))}
           </div>
         )}
         {fileLoading && (
@@ -278,7 +282,7 @@ const ChatInputBase = ({ handelConversation }) => {
               className={cn(
                 "cursor-pointer text-foreground flex items-center gap-1",
                 (files.length >= 5 || tab.webSearch || tab.isImageGenerate) &&
-                  "cursor-not-allowed"
+                "cursor-not-allowed"
               )}
               disabled={
                 files.length >= 5 || tab.webSearch || tab.isImageGenerate
@@ -381,7 +385,7 @@ const ChatInputBase = ({ handelConversation }) => {
                 className={cn(
                   "bg-muted-foreground/20 rounded-full p-2 cursor-pointer text-muted-foreground",
                   !userPrompt &&
-                    "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
+                  "cursor-not-allowed bg-muted-foreground/10 text-muted-foreground"
                 )}
               >
                 <ArrowUp size={15} />
