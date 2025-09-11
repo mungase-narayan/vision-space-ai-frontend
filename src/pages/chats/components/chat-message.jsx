@@ -1,7 +1,7 @@
 import React from "react";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { Bot, Copy, Download, Loader, Pencil } from "lucide-react";
+import { Bot, Copy, Download, Loader, Pencil, Sparkles, Zap } from "lucide-react";
 
 import { MDX } from "@/components";
 import { useAuth } from "@/hooks";
@@ -34,12 +34,12 @@ export default function ChatMessage({ chat }) {
   };
 
   return (
-    <div className={cn("py-6", isUser ? "bg-background" : "bg-muted")}>
-      <div className="max-w-5xl mx-auto px-6 flex flex-col sm:flex-row gap-4">
+    <div className={cn("py-3", isUser ? "bg-background" : "bg-gradient-to-br from-slate-50/80 to-slate-100/60 dark:from-slate-800/70 dark:to-slate-700/50")}>
+      <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row gap-3">
         <div className="flex flex-row gap-2">
           {isUser ? (
             <Hint label={tab?.userId?.fullName || user?.fullName}>
-              <Avatar className="h-8 w-8 flex-shrink-0">
+              <Avatar className="h-8 w-8 flex-shrink-0 ring-1 ring-slate-200 dark:ring-slate-700">
                 <AvatarImage
                   src={
                     tab?.userId?.avatar?.url ||
@@ -47,7 +47,7 @@ export default function ChatMessage({ chat }) {
                   }
                   alt="User"
                 />
-                <AvatarFallback>
+                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs">
                   {tab?.userId?.fullName?.charAt(0) ||
                     user?.fullName?.charAt(0) ||
                     "U"}
@@ -55,35 +55,37 @@ export default function ChatMessage({ chat }) {
               </Avatar>
             </Hint>
           ) : (
-            <Avatar className="h-8 w-8 flex-shrink-0">
-              <AvatarFallback className="bg-active text-white">
-                <Bot />
-              </AvatarFallback>
-            </Avatar>
+            <div className="relative">
+              <Avatar className="h-8 w-8 flex-shrink-0 ring-2 ring-slate-300 dark:ring-slate-500">
+                <AvatarFallback className="bg-gradient-to-br from-slate-600 via-slate-700 to-gray-700 dark:from-slate-500 dark:via-slate-600 dark:to-gray-600 text-white">
+                  <Bot className="h-4 w-4" />
+                </AvatarFallback>
+              </Avatar>
+              <div className="absolute -top-0.5 -right-0.5 h-3 w-3 bg-gradient-to-r from-slate-500 to-gray-600 dark:from-slate-400 dark:to-gray-500 rounded-full flex items-center justify-center">
+                <Sparkles className="h-2 w-2 text-white" />
+              </div>
+            </div>
           )}
 
-          <div className="items-center gap-2 mb-1 flex sm:hidden">
-            <span className="font-medium text-sm">
-              {isUser ? "You" : "Assistant"}
+          <div className="items-center gap-1.5 mb-0.5 flex sm:hidden">
+            <span className="font-medium text-xs bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-100 bg-clip-text text-transparent">
+              {isUser ? "You" : "AI"}
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded-full">
               {format(chat?.createdAt || new Date(), "hh:mm a")}
             </span>
           </div>
         </div>
 
         <div className="flex-1 w-full">
-          <div className="items-center gap-2 mb-1 hidden sm:flex">
-            <span className="font-medium text-sm">
-              {isUser ? "You" : "Assistant"}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {format(chat?.createdAt || new Date(), "hh:mm a")}
+          <div className="items-center gap-2 mb-2 hidden sm:flex">
+            <span className="font-medium text-xs bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-100 bg-clip-text text-transparent">
+              {isUser ? "You" : "AI Assistant"}
             </span>
           </div>
 
           {!!chat?.allFiles?.length && (
-            <div className="flex items-center overflow-auto max-w-full gap-3 pb-2 hide-scrollbar">
+            <div className="flex items-center overflow-auto max-w-full gap-2 pb-2 hide-scrollbar">
               {chat.allFiles.map((file, i) => (
                 <DisplayChatFiles
                   data={file}
@@ -95,31 +97,38 @@ export default function ChatMessage({ chat }) {
             </div>
           )}
 
-          <div className="prose dark:prose-invert prose-sm max-w-none">
+          <div className={cn(
+            "prose dark:prose-invert prose-sm max-w-none",
+            !isUser && "bg-gradient-to-br from-slate-50/95 to-gray-50/90 dark:from-slate-800/60 dark:to-slate-700/70 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-slate-200/70 dark:border-slate-600/60"
+          )}>
             {isUser ? (
               <div className="flex flex-col">
-                <p className="whitespace-pre-wrap break-words text-sm sm:text-base text-foreground">
+                <p className="whitespace-pre-wrap break-words text-sm text-foreground leading-relaxed">
                   {chat.content}
                 </p>
-                <div className="flex items-center justify-end print:hidden">
+                <div className="flex items-center justify-end print:hidden mt-2">
                   <Button
                     variant="ghost"
                     size="icon"
                     disabled={tab.isConversation}
                     onClick={() => editChat(tab.id, chat.id)}
                     className={cn(
-                      "transition-opacity duration-150",
+                      "h-7 w-7 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full",
                       tab.isConversation
                         ? "cursor-not-allowed opacity-50"
                         : "opacity-70 hover:opacity-100"
                     )}
                     aria-label="Edit message"
                   >
-                    <Pencil size={14} />
+                    <Pencil size={12} />
                   </Button>
 
-                  <Button variant="ghost" onClick={handleCopy}>
-                    <Copy size={15} />
+                  <Button
+                    variant="ghost"
+                    onClick={handleCopy}
+                    className="h-7 w-7 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full"
+                  >
+                    <Copy size={12} />
                   </Button>
                 </div>
               </div>
@@ -141,7 +150,7 @@ const AIResponse = ({ chat, isLast }) => {
   const printRef = React.useRef(null);
   const canvasEl = React.useRef(null);
 
-  const handleAfterPrint = React.useCallback(() => {}, []);
+  const handleAfterPrint = React.useCallback(() => { }, []);
   const handleBeforePrint = React.useCallback(() => {
     return Promise.resolve();
   }, []);
@@ -176,25 +185,50 @@ const AIResponse = ({ chat, isLast }) => {
   };
 
   return (
-    <div className="w-full text-sm sm:text-base" ref={printRef}>
-      <MDX content={chat.content} model={tab.model} />
+    <div className="w-full text-sm relative" ref={printRef}>
+      {/* AI Response Content */}
+      <div className="relative">
+        <MDX content={chat.content} model={tab.model} />
+      </div>
+
+      {/* Action Buttons */}
       {isLast && tab.isConversation ? null : (
-        <div className="flex items-center justify-end gap-1 print:hidden mt-2">
+        <div className="flex items-center justify-end gap-1 print:hidden mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-600/50">
           <EditChatResponse chat={chat} tabId={tab.id} />
-          <Button variant="ghost" onClick={handleCopy}>
-            <Copy size={15} />
+          <Button
+            variant="ghost"
+            onClick={handleCopy}
+            className="h-7 w-7 transition-all duration-200 hover:bg-slate-100 dark:hover:bg-slate-700/60 hover:text-slate-700 dark:hover:text-slate-200 rounded-full"
+            title="Copy"
+          >
+            <Copy size={12} />
           </Button>
-          <Button variant="ghost" onClick={printFn}>
-            <Download size={15} />
+          <Button
+            variant="ghost"
+            onClick={printFn}
+            className="h-7 w-7 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700/60 hover:text-gray-700 dark:hover:text-gray-200 rounded-full"
+            title="Download"
+          >
+            <Download size={12} />
           </Button>
         </div>
       )}
+
+      {/* Loading State */}
       {tab.isConversation && isLast && (
-        <div className="flex items-center justify-start gap-1 mt-2 print:hidden">
-          <Loader size={15} className="animate-spin" />{" "}
-          <span className="text-xs text-muted-foreground">
-            Please wait, generating response...
-          </span>
+        <div className="flex items-center justify-start gap-2 mt-2 pt-2 border-t border-slate-200/60 dark:border-slate-600/50 print:hidden">
+          <div className="relative">
+            <Loader size={14} className="animate-spin text-slate-600 dark:text-slate-400" />
+            <div className="absolute inset-0 rounded-full border border-slate-300 dark:border-slate-500 animate-pulse"></div>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-xs font-medium text-slate-700 dark:text-slate-200">
+              AI is thinking...
+            </span>
+            <span className="text-xs text-slate-600/70 dark:text-slate-300/70">
+              Generating response...
+            </span>
+          </div>
         </div>
       )}
     </div>

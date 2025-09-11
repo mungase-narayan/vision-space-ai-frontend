@@ -37,18 +37,18 @@ export function CodeBlock({ node, inline, className, children, ...props }) {
   };
 
   return !inline && match ? (
-    <div className="relative group">
+    <div className="relative group my-4">
       <button
         onClick={handleCopy}
-        className="absolute top-2 right-2 px-2 py-1 text-xs text-white bg-gray-700 rounded hover:bg-gray-600 transition-opacity opacity-100"
+        className="absolute top-2 right-2 px-2 py-1 text-xs font-medium text-white bg-slate-700/80 backdrop-blur-sm rounded-md hover:bg-slate-600/80 transition-all duration-200 opacity-0 group-hover:opacity-100 z-10"
       >
-        {copied ? "Copied!" : "Copy"}
+        {copied ? "✓" : "Copy"}
       </button>
       <SyntaxHighlighter
         style={vscDarkPlus}
         language={match[1]}
         PreTag="div"
-        className="!bg-neutral-900 rounded !text-base font-mono"
+        className="!bg-slate-900/95 !rounded-lg !text-sm font-mono shadow-lg border border-slate-700/50"
         {...props}
       >
         {code}
@@ -56,7 +56,7 @@ export function CodeBlock({ node, inline, className, children, ...props }) {
     </div>
   ) : (
     <code
-      className="bg-gray-200 dark:bg-accent border px-1 rounded text-sm font-mono text-primary"
+      className="bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 px-1.5 py-0.5 rounded text-sm font-mono text-slate-800 dark:text-slate-100"
       {...props}
     >
       {children}
@@ -142,7 +142,7 @@ const components = {
   },
   p: ({ className, ...props }) => (
     <p
-      className={cn("leading-7 [&:not(:first-child)]:mt-6", className)}
+      className={cn("leading-6 [&:not(:first-child)]:mt-4 text-slate-700 dark:text-slate-200", className)}
       {...props}
     />
   ),
@@ -157,7 +157,7 @@ const components = {
   ),
   blockquote: ({ className, ...props }) => (
     <blockquote
-      className={cn("mt-6 border-l-2 pl-6 italic", className)}
+      className={cn("mt-4 border-l-4 border-slate-500 dark:border-slate-400 pl-4 italic bg-slate-50/50 dark:bg-slate-800/30 py-3 rounded-r-lg", className)}
       {...props}
     />
   ),
