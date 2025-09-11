@@ -2,6 +2,7 @@ import { toast } from "sonner";
 import { v4 as uuid } from "uuid";
 
 import { URLS } from "@/constants";
+import { cleanAIResponse, isResponseCorrupted } from "@/lib/response-cleaner";
 
 import { useChatsProvider } from "../providers/chats-provider";
 import { useChatProvider } from "../providers/chat-provider";
@@ -28,7 +29,55 @@ const useStartStreaming = () => {
 
       if (!response.ok) throw new Error("Request failed");
       const result = await response.json();
-      content = result?.reply ?? "";
+
+      // Debug: Log the full response
+      console.log('Backend response:', result);
+
+      // Clean up the response content
+      let rawContent = result?.reply ?? "";
+
+      // Only clean if severely corrupted (more conservative approach)
+      const hasExcessiveCorruption = rawContent.includes('? ? ? ?') ||
+        rawContent.includes('…………') ||
+        rawContent.match(/Sorry.*Oops.*Apologies/i);
+
+      if (hasExcessiveCorruption) {
+        console.warn('Detected severely corrupted AI response, applying cleanup...');
+        rawContent = cleanAIResponse(rawContent);
+      }
+
+      content = rawContent;
+
+      // Handle different chart data formats
+      if (result?.chartData) {
+        console.log('Chart data found:', result.chartData);
+        // Add chart data as a properly formatted code block
+        const chartJson = JSON.stringify(result.chartData.spec, null, 2);
+        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+      } else if (result?.chart) {
+        console.log('Chart data found in chart field:', result.chart);
+        const chartJson = JSON.stringify(result.chart, null, 2);
+        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+      } else if (result?.visualization) {
+        console.log('Chart data found in visualization field:', result.visualization);
+        const chartJson = JSON.stringify(result.visualization, null, 2);
+        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+      } else {
+        console.log('No chartData in response. Available fields:', Object.keys(result || {}));
+
+        // Try to extract chart data from the reply text if it contains JSON
+        const jsonMatch = rawContent.match(/\{[\s\S]*"data"[\s\S]*"layout"[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            const extractedChart = JSON.parse(jsonMatch[0]);
+            console.log('Extracted chart from text:', extractedChart);
+            const chartJson = JSON.stringify(extractedChart, null, 2);
+            content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+          } catch (e) {
+            console.log('Failed to parse extracted chart JSON:', e);
+          }
+        }
+      }
     } catch (error) {
       toast.error(error?.message || "Request error");
     } finally {
