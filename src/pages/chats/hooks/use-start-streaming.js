@@ -3,6 +3,8 @@ import { v4 as uuid } from "uuid";
 
 import { URLS } from "@/constants";
 import { cleanAIResponse, isResponseCorrupted } from "@/lib/response-cleaner";
+import { convertChartType, enhanceChart } from "@/lib/chart-converter";
+import { generateFallbackChart, isGenericChart } from "@/lib/fallback-chart-generator";
 
 import { useChatsProvider } from "../providers/chats-provider";
 import { useChatProvider } from "../providers/chat-provider";
@@ -30,8 +32,10 @@ const useStartStreaming = () => {
       if (!response.ok) throw new Error("Request failed");
       const result = await response.json();
 
-      // Debug: Log the full response
+      // Debug: Log the request and response
+      console.log('User query:', lastUserMessage);
       console.log('Backend response:', result);
+      console.log('Response keys:', Object.keys(result || {}));
 
       // Clean up the response content
       let rawContent = result?.reply ?? "";
@@ -49,19 +53,17 @@ const useStartStreaming = () => {
       content = rawContent;
 
       // Handle different chart data formats
+      let chartSpec = null;
+
       if (result?.chartData) {
         console.log('Chart data found:', result.chartData);
-        // Add chart data as a properly formatted code block
-        const chartJson = JSON.stringify(result.chartData.spec, null, 2);
-        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+        chartSpec = result.chartData.spec;
       } else if (result?.chart) {
         console.log('Chart data found in chart field:', result.chart);
-        const chartJson = JSON.stringify(result.chart, null, 2);
-        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+        chartSpec = result.chart;
       } else if (result?.visualization) {
         console.log('Chart data found in visualization field:', result.visualization);
-        const chartJson = JSON.stringify(result.visualization, null, 2);
-        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+        chartSpec = result.visualization;
       } else {
         console.log('No chartData in response. Available fields:', Object.keys(result || {}));
 
@@ -69,13 +71,70 @@ const useStartStreaming = () => {
         const jsonMatch = rawContent.match(/\{[\s\S]*"data"[\s\S]*"layout"[\s\S]*\}/);
         if (jsonMatch) {
           try {
-            const extractedChart = JSON.parse(jsonMatch[0]);
-            console.log('Extracted chart from text:', extractedChart);
-            const chartJson = JSON.stringify(extractedChart, null, 2);
-            content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+            chartSpec = JSON.parse(jsonMatch[0]);
+            console.log('Extracted chart from text:', chartSpec);
           } catch (e) {
             console.log('Failed to parse extracted chart JSON:', e);
           }
+        }
+      }
+
+      // Process and enhance chart if found
+      if (chartSpec) {
+        console.log('Original chart from backend:', chartSpec);
+
+        // Check if the backend chart is generic/inappropriate for the query
+        if (isGenericChart(chartSpec, lastUserMessage)) {
+          console.warn('Backend returned generic chart, generating fallback...');
+          const fallbackChart = generateFallbackChart(lastUserMessage, chartSpec);
+          if (fallbackChart) {
+            chartSpec = fallbackChart;
+            console.log('Using fallback chart:', chartSpec);
+          }
+        }
+
+        // Convert chart type based on user request
+        const convertedChart = convertChartType(chartSpec, lastUserMessage);
+
+        // Enhance chart based on context
+        const enhancedChart = enhanceChart(convertedChart, lastUserMessage);
+
+        // Add the processed chart as a code block
+        const chartJson = JSON.stringify(enhancedChart, null, 2);
+        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+
+        console.log('Final processed chart:', enhancedChart);
+      } else {
+        // No chart from backend, try to generate one based on the query
+        console.log('No chart from backend, attempting to generate fallback...');
+        const fallbackChart = generateFallbackChart(lastUserMessage);
+        if (fallbackChart) {
+          console.log('Generated fallback chart:', fallbackChart);
+
+          // Apply enhancements to fallback chart
+          const enhancedChart = enhanceChart(fallbackChart, lastUserMessage);
+
+          // Add the generated chart as a code block
+          const chartJson = JSON.stringify(enhancedChart, null, 2);
+          content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+
+          console.log('Final fallback chart:', enhancedChart);
+        }
+      }
+
+      // Only force chart generation for explicit visualization requests (not greetings or general questions)
+      const isExplicitVisualizationRequest = lastUserMessage.toLowerCase().match(
+        /^(plot|chart|graph|visualize|show.*chart|show.*graph|create.*chart|generate.*plot|draw.*graph)/
+      );
+
+      if (isExplicitVisualizationRequest && !content.includes('```plotly')) {
+        console.log('Forcing chart generation for explicit visualization request...');
+        const forcedChart = generateFallbackChart(lastUserMessage);
+        if (forcedChart) {
+          const enhancedChart = enhanceChart(forcedChart, lastUserMessage);
+          const chartJson = JSON.stringify(enhancedChart, null, 2);
+          content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+          console.log('Forced chart generation successful:', enhancedChart);
         }
       }
     } catch (error) {
