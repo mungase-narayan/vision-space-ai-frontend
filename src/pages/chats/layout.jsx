@@ -433,22 +433,30 @@ const Content = () => {
       style={{ height: viewportHeight }}
     >
       <div className={cn("flex w-full flex-col overflow-hidden")}>
-        <header className="border-b py-3 flex items-center px-2 justify-between">
-          <div className="flex items-center gap-2 w-full">
-            <SidebarTrigger className="size-8 md:!hidden" />
+        <header className="border-b border-border/50 bg-gradient-to-r from-background via-background to-background/95 backdrop-blur-sm py-2 flex items-center px-3 justify-between shadow-sm">
+          <div className="flex items-center gap-3 w-full">
+            <SidebarTrigger className="size-8 md:!hidden hover:bg-muted/50 transition-colors duration-200 rounded-md" />
 
-            <div className="w-full flex items-center h-full px-2 overflow-x-auto gap-1 hide-scrollbar">
-              {tabs.map((tab) => (
-                <TabButton key={tab.id} tab={tab} />
-              ))}
-              <button
-                className="hover:bg-muted p-1 rounded-full hover:text-muted-foreground cursor-pointer"
-                onClick={() => addTab("New Chat")}
-              >
-                <Plus size={15} />
-              </button>
+            <div className="relative w-full flex items-center h-8 px-1 overflow-x-auto gap-1 scrollbar-thin scrollbar-thumb-muted-foreground/20 scrollbar-track-transparent hover:scrollbar-thumb-muted-foreground/40">
+              <div className="flex items-center gap-1 min-w-max">
+                {tabs.map((tab) => (
+                  <TabButton key={tab.id} tab={tab} />
+                ))}
+                <button
+                  className="hover:bg-muted/50 p-1.5 rounded-md hover:text-foreground cursor-pointer transition-all duration-200 hover:scale-105 border border-dashed border-muted-foreground/30 hover:border-muted-foreground/50 flex-shrink-0"
+                  onClick={() => addTab("New Chat")}
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              {/* Scroll indicators */}
+              <div className="absolute left-0 top-0 bottom-0 w-4 bg-gradient-to-r from-background to-transparent pointer-events-none z-10" />
+              <div className="absolute right-0 top-0 bottom-0 w-4 bg-gradient-to-l from-background to-transparent pointer-events-none z-10" />
             </div>
-            <ModeToggle />
+            <div className="flex items-center gap-2">
+              <ModeToggle />
+            </div>
           </div>
         </header>
 
