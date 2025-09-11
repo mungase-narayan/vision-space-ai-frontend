@@ -13,6 +13,7 @@ import "highlight.js/styles/github.css";
 
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
+import ChartRenderer, { ENGINE } from "./chart-renderer";
 
 export const FOCUS_VISIBLE_OUTLINE = `focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`;
 export const LINK_STYLES = `decoration-none text-primary transition-all hover:text-primary`;
@@ -25,6 +26,51 @@ export function CodeBlock({ node, inline, className, children, ...props }) {
   const match = /language-(\w+)/.exec(className || "");
   const code = String(children).replace(/\n$/, "");
   const [copied, setCopied] = useState(false);
+
+  // Detect custom chart languages and render accordingly
+  if (!inline && match) {
+    const lang = match[1]?.toLowerCase();
+    if (["plotly", "chartjs", "d3"].includes(lang)) {
+      try {
+        const spec = JSON.parse(code);
+        const engine =
+          lang === "plotly"
+            ? ENGINE.PLOTLY
+            : lang === "chartjs"
+              ? ENGINE.CHARTJS
+              : ENGINE.D3;
+        return (
+          <div data-chart-renderer="true" className="my-4 border border-border rounded-md p-2 bg-background">
+            <ChartRenderer engine={engine} spec={spec} />
+          </div>
+        );
+      } catch (e) {
+        // fall through to show code if JSON invalid
+      }
+    }
+  }
+
+  // If code block has no language and looks like JSON, try auto-rendering as chart
+  if (!inline && !match) {
+    try {
+      const spec = JSON.parse(code);
+      let engine = ENGINE.CHARTJS;
+      if (Array.isArray(spec?.data) && (spec?.layout || spec?.data?.[0]?.type)) {
+        engine = ENGINE.PLOTLY;
+      } else if (typeof spec?.type === "string" && spec?.data && spec?.data?.labels) {
+        engine = ENGINE.CHARTJS;
+      } else if (Array.isArray(spec?.data) && spec?.data?.[0] && ("x" in spec.data[0]) && ("y" in spec.data[0])) {
+        engine = ENGINE.D3;
+      }
+      return (
+        <div data-chart-renderer="true" className="my-4 border border-border rounded-md p-2 bg-background">
+          <ChartRenderer engine={engine} spec={spec} />
+        </div>
+      );
+    } catch (_) {
+      // not JSON; fall through
+    }
+  }
 
   const handleCopy = async () => {
     try {
@@ -174,14 +220,22 @@ const components = {
       children={children}
     />
   ),
-  pre: ({ className, ...props }) => {
+  pre: ({ className, children, ...props }) => {
+    const onlyChild = Array.isArray(children) ? children[0] : children;
+    if (
+      React.isValidElement(onlyChild) &&
+      onlyChild?.props?.["data-chart-renderer"]
+    ) {
+      return onlyChild;
+    }
+
     return (
-      <>
-        <pre
-          className="rounded-md overflow-x-auto text-sm mb-4 font-mono"
-          {...props}
-        />
-      </>
+      <pre
+        className={cn("rounded-md overflow-x-auto text-sm mb-4 font-mono", className)}
+        {...props}
+      >
+        {children}
+      </pre>
     );
   },
   table: ({ children, ...props }) => (
@@ -232,6 +286,25 @@ const config = {
 };
 
 const MDX = ({ content }) => {
+  // Directly render visualization tool envelope if present
+  if (typeof content === "string") {
+    try {
+      const parsed = JSON.parse(content);
+      if (parsed && parsed.kind === "visualization" && parsed.library && parsed.spec) {
+        if (parsed.library === "plotly") {
+          return (
+            <div data-chart-renderer="true" className="my-2">
+              <ChartRenderer engine={ENGINE.PLOTLY} spec={{ ...parsed.spec, layout: { ...(parsed.spec?.layout || {}), height: parsed.meta?.height || parsed.spec?.layout?.height || 400 } }} />
+            </div>
+          );
+        }
+        // If other libraries (e.g., vega-lite) are requested but not supported, fall through to markdown
+      }
+    } catch (_) {
+      // not JSON, render as markdown below
+    }
+  }
+
   return (
     <div className="relative">
       <MathJaxContext config={config}>
