@@ -129,10 +129,10 @@ export function generateFallbackChart(userMessage, backendChart = null) {
     return null;
   }
 
-  // Only generate charts for explicit visualization requests
-  const hasVisualizationKeywords = message.match(/(plot|chart|graph|visualiz|show.*data|display.*data|create.*chart|generate.*plot)/);
-  if (!hasVisualizationKeywords) {
-    console.log('No visualization keywords found, skipping chart generation');
+  // Only generate charts for explicit visualization commands (must start with these words)
+  const isExplicitVisualizationCommand = message.match(/^(plot|chart|graph|visualize|show.*chart|show.*graph|create.*chart|generate.*plot|draw.*graph)/);
+  if (!isExplicitVisualizationCommand) {
+    console.log('No explicit visualization command found, skipping chart generation');
     return null;
   }
 

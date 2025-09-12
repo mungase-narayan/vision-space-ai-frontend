@@ -105,38 +105,32 @@ const useStartStreaming = () => {
 
         console.log('Final processed chart:', enhancedChart);
       } else {
-        // No chart from backend, try to generate one based on the query
-        console.log('No chart from backend, attempting to generate fallback...');
-        const fallbackChart = generateFallbackChart(lastUserMessage);
-        if (fallbackChart) {
-          console.log('Generated fallback chart:', fallbackChart);
+        // Only generate fallback charts for explicit visualization requests
+        const userWantsVisualization = lastUserMessage.toLowerCase().match(
+          /^(plot|chart|graph|visualize|show.*chart|show.*graph|create.*chart|generate.*plot|draw.*graph)/
+        );
 
-          // Apply enhancements to fallback chart
-          const enhancedChart = enhanceChart(fallbackChart, lastUserMessage);
+        if (userWantsVisualization) {
+          console.log('No chart from backend, attempting to generate fallback for visualization request...');
+          const fallbackChart = generateFallbackChart(lastUserMessage);
+          if (fallbackChart) {
+            console.log('Generated fallback chart:', fallbackChart);
 
-          // Add the generated chart as a code block
-          const chartJson = JSON.stringify(enhancedChart, null, 2);
-          content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+            // Apply enhancements to fallback chart
+            const enhancedChart = enhanceChart(fallbackChart, lastUserMessage);
 
-          console.log('Final fallback chart:', enhancedChart);
+            // Add the generated chart as a code block
+            const chartJson = JSON.stringify(enhancedChart, null, 2);
+            content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
+
+            console.log('Final fallback chart:', enhancedChart);
+          }
+        } else {
+          console.log('No chart from backend and user did not request visualization, skipping chart generation');
         }
       }
 
-      // Only force chart generation for explicit visualization requests (not greetings or general questions)
-      const isExplicitVisualizationRequest = lastUserMessage.toLowerCase().match(
-        /^(plot|chart|graph|visualize|show.*chart|show.*graph|create.*chart|generate.*plot|draw.*graph)/
-      );
-
-      if (isExplicitVisualizationRequest && !content.includes('```plotly')) {
-        console.log('Forcing chart generation for explicit visualization request...');
-        const forcedChart = generateFallbackChart(lastUserMessage);
-        if (forcedChart) {
-          const enhancedChart = enhanceChart(forcedChart, lastUserMessage);
-          const chartJson = JSON.stringify(enhancedChart, null, 2);
-          content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
-          console.log('Forced chart generation successful:', enhancedChart);
-        }
-      }
+      // Chart generation is now handled in the main logic above, no need for forced generation
     } catch (error) {
       toast.error(error?.message || "Request error");
     } finally {
