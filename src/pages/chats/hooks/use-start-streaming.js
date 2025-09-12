@@ -77,6 +77,13 @@ const useStartStreaming = () => {
             console.log('Failed to parse extracted chart JSON:', e);
           }
         }
+
+        // Check if backend mentions generating a chart but didn't provide data
+        const mentionsChart = rawContent.match(/(chart\.png|attachment:\/\/|!\[.*\]\(.*chart.*\)|line chart|temperature.*chart|showing.*chart)/i);
+        if (mentionsChart) {
+          console.log('Backend mentions chart generation but no data provided, generating fallback...');
+          chartSpec = generateFallbackChart(lastUserMessage);
+        }
       }
 
       // Process and enhance chart if found

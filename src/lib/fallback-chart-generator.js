@@ -31,6 +31,11 @@ function generateDynamicData(message, count = 10) {
   }
 
   if (message.includes('temperature')) {
+    // Generate realistic temperature data based on location
+    if (message.includes('alandi')) {
+      // Alandi surface temperatures around 27-28°C
+      return generateTimeSeriesData(count, 27.3, 0.5);
+    }
     return generateTimeSeriesData(count, 15, 3);
   }
 
@@ -129,10 +134,12 @@ export function generateFallbackChart(userMessage, backendChart = null) {
     return null;
   }
 
-  // Only generate charts for explicit visualization commands (must start with these words)
+  // Generate charts for explicit visualization commands OR when backend indicates chart generation
   const isExplicitVisualizationCommand = message.match(/^(plot|chart|graph|visualize|show.*chart|show.*graph|create.*chart|generate.*plot|draw.*graph)/);
-  if (!isExplicitVisualizationCommand) {
-    console.log('No explicit visualization command found, skipping chart generation');
+  const hasVisualizationContext = message.match(/(temperature.*trend|temperature.*week|temperature.*day|salinity.*trend|pressure.*trend|data.*visualization)/);
+
+  if (!isExplicitVisualizationCommand && !hasVisualizationContext) {
+    console.log('No visualization command or context found, skipping chart generation');
     return null;
   }
 
@@ -144,13 +151,25 @@ export function generateFallbackChart(userMessage, backendChart = null) {
   let yData = [];
 
   // Time-based data
-  if (message.includes('time') || message.includes('year') || message.includes('month')) {
+  if (message.includes('time') || message.includes('year') || message.includes('month') ||
+    message.includes('week') || message.includes('day') || message.includes('trend')) {
     if (message.includes('2000') && message.includes('2020')) {
       xData = ['2000', '2005', '2010', '2015', '2020'];
       yData = generateDynamicData(message, 5);
     } else if (message.includes('month')) {
       xData = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
       yData = generateDynamicData(message, 12);
+    } else if (message.includes('week') || message.includes('7 day')) {
+      // Generate last 7 days
+      const dates = [];
+      const today = new Date();
+      for (let i = 6; i >= 0; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        dates.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+      }
+      xData = dates;
+      yData = generateDynamicData(message, 7);
     } else {
       // Generate recent dates
       const dates = [];
