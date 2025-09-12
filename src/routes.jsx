@@ -69,6 +69,10 @@ const AppRoutes = () => {
 
             <Route path="visualize" element={<VisualizePage />} />
 
+            <Route path="maps" element={<MapsDashboard />} />
+
+            <Route path="visualize" element={<VisualizePage />} />
+
             <Route path="dashboard" element={<DashboardLayout />}>
               <Route path="profile" element={<Profile />} />
               <Route path="users" element={<Users />} />

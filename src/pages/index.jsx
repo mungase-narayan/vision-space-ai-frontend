@@ -8,6 +8,7 @@ import HomeV1 from "./HomeV1";
 import MapsDashboard from "./maps";
 import VisualizePage from "./visualize";
 import MapsDashboard from "./maps";
+import VisualizePage from "./visualize";
 
 import SignUpPage from "./auth/sign-up";
 import SignInPage from "./auth/sign-in";
