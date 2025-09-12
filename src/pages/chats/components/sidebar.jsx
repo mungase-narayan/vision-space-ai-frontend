@@ -12,6 +12,7 @@ import {
   FolderOpen,
   StarOff,
   Clock12Icon,
+  Map,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -33,6 +34,7 @@ import CreateProject from "./create-project";
 import ProjectButtons from "./project-buttons";
 import { useChatsProvider } from "../providers/chats-provider";
 import { Separator } from "@/components/ui/separator";
+import { useNavigate } from "react-router-dom";
 
 // const formatLabel = (dateKey) => {
 //   const date = new Date(dateKey);
@@ -56,6 +58,7 @@ export default function ChatsSidebar() {
   } = useChatsProvider();
 
   const { getChat } = useMutedGetChat();
+  const navigate = useNavigate();
 
   const [isLoading, setIsLoading] = useState(false);
   const [clickedId, setClickedId] = useState(null);
@@ -141,6 +144,15 @@ export default function ChatsSidebar() {
             >
               <PlusIcon size={12} />
               <span>New Chat</span>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => navigate('/maps')}
+              className="flex items-center justify-start gap-2 !px-3 text-start hover:bg-accent hover:text-accent-foreground transition-all duration-200 h-8 text-xs font-medium"
+            >
+              <Map size={12} />
+              <span>Maps Dashboard</span>
             </Button>
             <CreateProject />
           </div>

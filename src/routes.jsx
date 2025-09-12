@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import {
   SignUpPage,
@@ -13,6 +13,7 @@ import {
   Setting,
   Chats,
   HomeV1,
+  MapsDashboard,
   UnderReview,
   AcceptInvitation,
   Users,
@@ -67,6 +68,8 @@ const AppRoutes = () => {
             <Route path="chats" element={<ChatsLayout />}>
               <Route index element={<Chats />} />
             </Route>
+
+            <Route path="maps" element={<MapsDashboard />} />
 
             <Route path="dashboard" element={<DashboardLayout />}>
               <Route path="profile" element={<Profile />} />

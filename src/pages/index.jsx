@@ -5,6 +5,7 @@ import ChatPage from "./chat";
 import Profile from "./profile";
 import Chats from "./chats";
 import HomeV1 from "./HomeV1";
+import MapsDashboard from "./maps";
 
 import SignUpPage from "./auth/sign-up";
 import SignInPage from "./auth/sign-in";
@@ -42,6 +43,7 @@ export {
   Setting,
   Chats,
   HomeV1,
+  MapsDashboard,
   Users,
   AcceptInvitation,
   UsersHistory,
