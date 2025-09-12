@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 
 import CesiumViewer from "./components/cesium-viewer";
 import Map2D from "./components/map-2d";
+import DrawingControls from "./components/drawing-controls";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,6 +37,9 @@ const MapsDashboard = () => {
   const navigate = useNavigate();
   const [is3D, setIs3D] = useState(false);
   const [chatPanelOpen, setChatPanelOpen] = useState(true);
+  const [drawingMode, setDrawingMode] = useState(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const cesiumViewerRef = useRef(null);
   const [chatMessages, setChatMessages] = useState([
     {
       id: 1,
@@ -103,6 +107,29 @@ const MapsDashboard = () => {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   };
 
+  const handleDrawingModeChange = (mode) => {
+    setDrawingMode(mode);
+  };
+
+  const handleClearAllDrawings = () => {
+    if (cesiumViewerRef.current && cesiumViewerRef.current.viewer) {
+      const viewer = cesiumViewerRef.current.viewer;
+      // Remove all drawing entities (keep ARGO float data)
+      const entitiesToRemove = [];
+      viewer.entities.values.forEach(entity => {
+        if (entity.name && (
+          entity.name.includes('Polygon') || 
+          entity.name.includes('Circle') || 
+          entity.name.includes('Arc') ||
+          entity.name.includes('Point')
+        )) {
+          entitiesToRemove.push(entity);
+        }
+      });
+      entitiesToRemove.forEach(entity => viewer.entities.remove(entity));
+    }
+  };
+
   return (
     <div className="flex h-screen bg-background">
       {/* Left Chat Panel */}
@@ -129,8 +156,8 @@ const MapsDashboard = () => {
                 <p className="text-xs text-muted-foreground">Quick suggestions:</p>
                 {[
                   "Show ARGO float trajectory",
-                  "Analyze ocean temperature data",
-                  "Display salinity measurements",
+                  "Draw analysis polygon",
+                  "Create circular study area",
                   "Upload oceanographic data"
                 ].map((suggestion, index) => (
                   <button
@@ -297,10 +324,16 @@ const MapsDashboard = () => {
           <Map2D is3D={is3D} />
           
           {/* 3D Cesium Globe View */}
-          <CesiumViewer is3D={is3D} />
+          <CesiumViewer 
+            ref={cesiumViewerRef}
+            is3D={is3D} 
+            drawingMode={drawingMode}
+            onDrawingModeChange={handleDrawingModeChange}
+            onDrawingStateChange={setIsDrawing}
+          />
 
           {/* Map Controls (Right Side) */}
-          <div className="absolute right-4 top-4 flex flex-col gap-2">
+          <div className="absolute right-4 top-4 flex flex-col gap-2 z-50">
             <Card className="p-2 shadow-lg bg-card/95 backdrop-blur-sm border-border/50">
               <div className="flex flex-col gap-1">
                 <Button
@@ -347,6 +380,18 @@ const MapsDashboard = () => {
               </div>
             </Card>
           </div>
+
+          {/* Drawing Controls (Left Side) - Only show in 3D mode */}
+          {is3D && (
+            <div className="absolute left-4 top-4 z-50">
+              <DrawingControls
+                drawingMode={drawingMode}
+                onDrawingModeChange={handleDrawingModeChange}
+                onClearAll={handleClearAllDrawings}
+                isDrawing={isDrawing}
+              />
+            </div>
+          )}
 
 
         </div>
