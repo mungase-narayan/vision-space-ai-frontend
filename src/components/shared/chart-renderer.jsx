@@ -1,4 +1,5 @@
 import React from "react";
+import FallbackChart from "./fallback-chart";
 
 const ENGINE = {
   PLOTLY: "plotly",
@@ -86,18 +87,80 @@ function ChartJsRenderer({ spec }) {
 }
 
 function PlotlyRenderer({ spec }) {
-  const Plot = React.useMemo(() => React.lazy(() => import("react-plotly.js")), []);
+  const [Plot, setPlot] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState(null);
+
+  React.useEffect(() => {
+    let mounted = true;
+
+    const loadPlotly = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Try multiple import strategies for better compatibility
+        let PlotComponent;
+        try {
+          const plotlyModule = await import("react-plotly.js");
+          PlotComponent = plotlyModule.default || plotlyModule.Plot || plotlyModule;
+          console.log('Plotly import successful:', !!PlotComponent);
+        } catch (e) {
+          console.error('Failed to import react-plotly.js:', e);
+          throw e;
+        }
+
+        if (mounted && PlotComponent) {
+          setPlot(() => PlotComponent);
+        }
+      } catch (err) {
+        console.error('Failed to load Plotly:', err);
+        if (mounted) {
+          setError(err.message);
+        }
+      } finally {
+        if (mounted) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadPlotly();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
   const { data = [], layout = {}, config = {} } = spec || {};
+
+  if (loading) {
+    return <div className="h-10 text-xs text-muted-foreground">Loading chart...</div>;
+  }
+
+  if (error || !Plot) {
+    console.log('Using fallback chart due to Plotly loading issue:', { error, hasPlot: !!Plot });
+    return (
+      <div className="space-y-2">
+        <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
+          <p>⚠️ Using fallback chart renderer</p>
+          <p className="text-xs text-gray-600">
+            {error ? `Error: ${error}` : 'Plotly component not loaded'}
+          </p>
+        </div>
+        <FallbackChart spec={{ data, layout, config }} />
+      </div>
+    );
+  }
+
   return (
-    <React.Suspense fallback={<div className="h-10 text-xs text-muted-foreground">Loading chart...</div>}>
-      <Plot
-        data={data}
-        layout={{ autosize: true, ...layout }}
-        config={{ responsive: true, displayModeBar: false, ...config }}
-        style={{ width: "100%", height: layout?.height || 400 }}
-        useResizeHandler
-      />
-    </React.Suspense>
+    <Plot
+      data={data}
+      layout={{ autosize: true, ...layout }}
+      config={{ responsive: true, displayModeBar: false, ...config }}
+      style={{ width: "100%", height: layout?.height || 400 }}
+      useResizeHandler
+    />
   );
 }
 
