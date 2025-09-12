@@ -8,6 +8,8 @@ import LogOutButton from "./shared/logout-button";
 import Pagination from "./shared/pagination";
 import Markdown from "./shared/markdown";
 import MDX from "./shared/mdx";
+import DynamicChartGenerator from "./shared/dynamic-chart-generator";
+import ChartConfigurator from "./shared/chart-configurator";
 import ConfirmDeleteButton from "./shared/delete-confirm-button";
 import { ModeToggle } from "./shared/mode-toggle";
 
@@ -22,6 +24,8 @@ export {
   Pagination,
   Markdown,
   MDX,
+  DynamicChartGenerator,
+  ChartConfigurator,
   ConfirmDeleteButton,
   ModeToggle,
 };

@@ -18,6 +18,7 @@ import {
   AcceptInvitation,
   Users,
   UsersHistory,
+  VisualizePage,
 } from "./pages";
 
 import {
@@ -70,6 +71,8 @@ const AppRoutes = () => {
             </Route>
 
             <Route path="maps" element={<MapsDashboard />} />
+
+            <Route path="visualize" element={<VisualizePage />} />
 
             <Route path="dashboard" element={<DashboardLayout />}>
               <Route path="profile" element={<Profile />} />
