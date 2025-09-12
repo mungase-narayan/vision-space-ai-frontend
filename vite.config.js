@@ -12,5 +12,12 @@ export default defineConfig({
   },
   server: {
     port: 5508,
+    proxy: {
+      '/api': {
+        target: 'https://blue-vision-backend.vercel.app',
+        changeOrigin: true,
+        secure: true
+      }
+    }
   },
 });
