@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom-dom";
 
 import {
   SignUpPage,
@@ -9,12 +9,9 @@ import {
   ResetPassword,
   VerifyUser,
   Profile,
-  ViewModel,
   Setting,
   Chats,
   HomeV1,
-  MapsDashboard,
-  UnderReview,
   AcceptInvitation,
   Users,
   UsersHistory,
@@ -71,9 +68,6 @@ const AppRoutes = () => {
             </Route>
 
             <Route path="visualize" element={<VisualizePage />} />
-
-            <Route path="maps" element={<MapsDashboard />} />
-
 
             <Route path="dashboard" element={<DashboardLayout />}>
               <Route path="profile" element={<Profile />} />
