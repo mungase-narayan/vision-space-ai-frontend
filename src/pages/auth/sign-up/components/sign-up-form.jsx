@@ -60,7 +60,7 @@ const SignUpForm = () => {
               <FormControl>
                 <Input
                   type="email"
-                  placeholder="example@blsheet.com"
+                  placeholder="example@gmail.com"
                   className="focus-visible:ring-1"
                   {...field}
                 />
