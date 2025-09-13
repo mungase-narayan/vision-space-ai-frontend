@@ -50,6 +50,7 @@ const MapsDashboard = () => {
   ]);
   const [inputMessage, setInputMessage] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [trajectoryData, setTrajectoryData] = useState(null);
   const fileInputRef = useRef(null);
   const mapFileInputRef = useRef(null);
 
@@ -89,6 +90,60 @@ const MapsDashboard = () => {
 
   const handleFileUpload = (event, source = "chat") => {
     const files = Array.from(event.target.files);
+
+    files.forEach(file => {
+      // Check if it's a JSON file for trajectory data
+      if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          try {
+            const jsonData = JSON.parse(e.target.result);
+
+            // Check if the JSON contains trajectory data (array of coordinate pairs)
+            if (Array.isArray(jsonData) && jsonData.length > 0) {
+              // Validate that it's an array of coordinate pairs
+              const isValidTrajectory = jsonData.every(coord =>
+                Array.isArray(coord) && coord.length === 2 &&
+                typeof coord[0] === 'number' && typeof coord[1] === 'number'
+              );
+
+              if (isValidTrajectory) {
+                setTrajectoryData(jsonData);
+
+                // Add success message to chat
+                const successMessage = {
+                  id: Date.now(),
+                  type: "assistant",
+                  content: `Successfully loaded trajectory data with ${jsonData.length} coordinate points. The trajectory has been plotted on the 3D globe.`,
+                  timestamp: new Date()
+                };
+                setChatMessages(prev => [...prev, successMessage]);
+              } else {
+                // Add error message to chat
+                const errorMessage = {
+                  id: Date.now(),
+                  type: "assistant",
+                  content: "The uploaded JSON file doesn't contain valid trajectory data. Please ensure it's an array of [longitude, latitude] coordinate pairs.",
+                  timestamp: new Date()
+                };
+                setChatMessages(prev => [...prev, errorMessage]);
+              }
+            }
+          } catch (error) {
+            // Add error message to chat
+            const errorMessage = {
+              id: Date.now(),
+              type: "assistant",
+              content: "Failed to parse the uploaded JSON file. Please check the file format.",
+              timestamp: new Date()
+            };
+            setChatMessages(prev => [...prev, errorMessage]);
+          }
+        };
+        reader.readAsText(file);
+      }
+    });
+
     const newFiles = files.map(file => ({
       id: Date.now() + Math.random(),
       name: file.name,
@@ -118,8 +173,8 @@ const MapsDashboard = () => {
       const entitiesToRemove = [];
       viewer.entities.values.forEach(entity => {
         if (entity.name && (
-          entity.name.includes('Polygon') || 
-          entity.name.includes('Circle') || 
+          entity.name.includes('Polygon') ||
+          entity.name.includes('Circle') ||
           entity.name.includes('Arc') ||
           entity.name.includes('Point')
         )) {
@@ -128,6 +183,19 @@ const MapsDashboard = () => {
       });
       entitiesToRemove.forEach(entity => viewer.entities.remove(entity));
     }
+  };
+
+  const handleClearTrajectoryData = () => {
+    setTrajectoryData(null);
+    setUploadedFiles(prev => prev.filter(file => !file.name.endsWith('.json')));
+
+    const clearMessage = {
+      id: Date.now(),
+      type: "assistant",
+      content: "Trajectory data cleared. Showing default ARGO float trajectory.",
+      timestamp: new Date()
+    };
+    setChatMessages(prev => [...prev, clearMessage]);
   };
 
   return (
@@ -156,9 +224,9 @@ const MapsDashboard = () => {
                 <p className="text-xs text-muted-foreground">Quick suggestions:</p>
                 {[
                   "Show ARGO float trajectory",
+                  "Upload JSON trajectory data",
                   "Draw analysis polygon",
-                  "Create circular study area",
-                  "Upload oceanographic data"
+                  "Create circular study area"
                 ].map((suggestion, index) => (
                   <button
                     key={index}
@@ -301,10 +369,24 @@ const MapsDashboard = () => {
               size="sm"
               onClick={() => mapFileInputRef.current?.click()}
               className="gap-2"
+              title="Upload JSON trajectory data"
             >
               <Upload size={14} />
               Upload Data
             </Button>
+
+            {trajectoryData && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleClearTrajectoryData}
+                className="gap-2"
+                title="Clear uploaded trajectory data"
+              >
+                <X size={14} />
+                Clear Data
+              </Button>
+            )}
 
             {/* Theme Toggle */}
             <ModeToggle />
@@ -312,6 +394,7 @@ const MapsDashboard = () => {
           <input
             ref={mapFileInputRef}
             type="file"
+            accept=".json,application/json"
             multiple
             className="hidden"
             onChange={(e) => handleFileUpload(e, "map")}
@@ -322,14 +405,15 @@ const MapsDashboard = () => {
         <div className="flex-1 relative bg-gradient-to-br from-blue-50/50 to-green-50/50 dark:from-slate-900/50 dark:to-slate-800/50 bg-background">
           {/* 2D Map View */}
           <Map2D is3D={is3D} />
-          
+
           {/* 3D Cesium Globe View */}
-          <CesiumViewer 
+          <CesiumViewer
             ref={cesiumViewerRef}
-            is3D={is3D} 
+            is3D={is3D}
             drawingMode={drawingMode}
             onDrawingModeChange={handleDrawingModeChange}
             onDrawingStateChange={setIsDrawing}
+            trajectoryData={trajectoryData}
           />
 
           {/* Map Controls (Right Side) */}
