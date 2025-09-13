@@ -40,6 +40,7 @@ const MapsDashboard = () => {
   const [drawingMode, setDrawingMode] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const cesiumViewerRef = useRef(null);
+  const map2DRef = useRef(null);
   const [chatMessages, setChatMessages] = useState([
     {
       id: 1,
@@ -167,7 +168,7 @@ const MapsDashboard = () => {
   };
 
   const handleClearAllDrawings = () => {
-    if (cesiumViewerRef.current && cesiumViewerRef.current.viewer) {
+    if (is3D && cesiumViewerRef.current && cesiumViewerRef.current.viewer) {
       const viewer = cesiumViewerRef.current.viewer;
       // Remove all drawing entities (keep ARGO float data)
       const entitiesToRemove = [];
@@ -182,6 +183,9 @@ const MapsDashboard = () => {
         }
       });
       entitiesToRemove.forEach(entity => viewer.entities.remove(entity));
+    } else if (!is3D && map2DRef.current && map2DRef.current.clearDrawings) {
+      // Clear 2D map drawings
+      map2DRef.current.clearDrawings();
     }
   };
 
@@ -404,7 +408,14 @@ const MapsDashboard = () => {
         {/* Map Container */}
         <div className="flex-1 relative bg-gradient-to-br from-blue-50/50 to-green-50/50 dark:from-slate-900/50 dark:to-slate-800/50 bg-background">
           {/* 2D Map View */}
-          <Map2D is3D={is3D} />
+          <Map2D
+            ref={map2DRef}
+            is3D={is3D}
+            drawingMode={drawingMode}
+            onDrawingModeChange={handleDrawingModeChange}
+            onDrawingStateChange={setIsDrawing}
+            trajectoryData={trajectoryData}
+          />
 
           {/* 3D Cesium Globe View */}
           <CesiumViewer
@@ -425,6 +436,14 @@ const MapsDashboard = () => {
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
                   title="Zoom In"
+                  onClick={() => {
+                    if (is3D && cesiumViewerRef.current?.viewer) {
+                      const camera = cesiumViewerRef.current.viewer.camera;
+                      camera.zoomIn(camera.positionCartographic.height * 0.5);
+                    } else if (!is3D && map2DRef.current?.map) {
+                      map2DRef.current.map.zoomIn();
+                    }
+                  }}
                 >
                   <ZoomIn size={14} />
                 </Button>
@@ -433,6 +452,14 @@ const MapsDashboard = () => {
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
                   title="Zoom Out"
+                  onClick={() => {
+                    if (is3D && cesiumViewerRef.current?.viewer) {
+                      const camera = cesiumViewerRef.current.viewer.camera;
+                      camera.zoomOut(camera.positionCartographic.height * 0.5);
+                    } else if (!is3D && map2DRef.current?.map) {
+                      map2DRef.current.map.zoomOut();
+                    }
+                  }}
                 >
                   <ZoomOut size={14} />
                 </Button>
@@ -441,15 +468,21 @@ const MapsDashboard = () => {
                   variant="ghost"
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
-                  title="Navigation"
-                >
-                  <Navigation size={14} />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
                   title="Reset View"
+                  onClick={() => {
+                    if (is3D && cesiumViewerRef.current?.viewer) {
+                      cesiumViewerRef.current.viewer.camera.setView({
+                        destination: window.Cesium?.Cartesian3.fromDegrees(-10, 45, 1000000)
+                      });
+                    } else if (!is3D && map2DRef.current?.map) {
+                      // Reset to trajectory bounds or default view
+                      if (map2DRef.current.map.plotTrajectoryData) {
+                        map2DRef.current.map.plotTrajectoryData();
+                      } else {
+                        map2DRef.current.map.setView([45, -10], 6);
+                      }
+                    }
+                  }}
                 >
                   <RotateCcw size={14} />
                 </Button>
@@ -458,6 +491,13 @@ const MapsDashboard = () => {
                   size="sm"
                   className="h-8 w-8 p-0 hover:bg-primary/10 hover:text-primary"
                   title="Fullscreen"
+                  onClick={() => {
+                    if (document.fullscreenElement) {
+                      document.exitFullscreen();
+                    } else {
+                      document.documentElement.requestFullscreen();
+                    }
+                  }}
                 >
                   <Maximize size={14} />
                 </Button>
@@ -465,17 +505,15 @@ const MapsDashboard = () => {
             </Card>
           </div>
 
-          {/* Drawing Controls (Left Side) - Only show in 3D mode */}
-          {is3D && (
-            <div className="absolute left-4 top-4 z-50">
-              <DrawingControls
-                drawingMode={drawingMode}
-                onDrawingModeChange={handleDrawingModeChange}
-                onClearAll={handleClearAllDrawings}
-                isDrawing={isDrawing}
-              />
-            </div>
-          )}
+          {/* Drawing Controls (Left Side) - Show in both 2D and 3D modes */}
+          <div className="absolute left-4 top-4 z-50">
+            <DrawingControls
+              drawingMode={drawingMode}
+              onDrawingModeChange={handleDrawingModeChange}
+              onClearAll={handleClearAllDrawings}
+              isDrawing={isDrawing}
+            />
+          </div>
 
 
         </div>
@@ -505,9 +543,23 @@ const MapsDashboard = () => {
               </div>
             </div>
 
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{is3D ? "3D Globe Ready" : "2D Map Ready"}</span>
-              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="flex items-center gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <span>{is3D ? "3D Globe Ready" : "2D Map Ready"}</span>
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              </div>
+              {trajectoryData && (
+                <div className="flex items-center gap-2">
+                  <span>Custom Trajectory Loaded</span>
+                  <div className="w-2 h-2 bg-cyan-500 rounded-full"></div>
+                </div>
+              )}
+              {isDrawing && (
+                <div className="flex items-center gap-2">
+                  <span>Drawing Mode Active</span>
+                  <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse"></div>
+                </div>
+              )}
             </div>
           </div>
         </div>

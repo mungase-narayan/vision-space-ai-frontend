@@ -7,9 +7,9 @@ npm i
 npm run dev
 ```
 
-## Maps Dashboard - Trajectory Data Upload
+## Maps Dashboard - 2D/3D Mapping with Trajectory Data
 
-The Maps Dashboard now supports uploading custom trajectory data in JSON format. This allows you to visualize your own coordinate data on the 3D globe instead of using the default ARGO float trajectory.
+The Maps Dashboard provides both 2D and 3D mapping capabilities with trajectory visualization and drawing tools. You can upload custom trajectory data in JSON format and visualize it on either map type.
 
 ### JSON Format
 
@@ -24,22 +24,57 @@ Upload a JSON file containing an array of coordinate pairs in the format `[longi
 ]
 ```
 
+### Map Modes
+
+**2D Map Mode:**
+- Interactive Leaflet-based map with OpenStreetMap tiles
+- Dark/light theme support with automatic tile switching
+- Trajectory visualization with start/end markers
+- Full drawing tools support (polygons and circles)
+- Zoom, pan, and reset controls
+
+**3D Globe Mode:**
+- Cesium-powered 3D globe visualization
+- Terrain and satellite imagery
+- Advanced 3D trajectory plotting
+- 3D drawing tools with polygon and circle support
+- Camera controls and fly-to animations
+
 ### How to Use
 
 1. Navigate to the Maps Dashboard
-2. Switch to 3D mode using the 2D/3D toggle
-3. Click the "Upload Data" button in the top-right corner
+2. Use the 2D/3D toggle to switch between map modes
+3. Click the "Upload Data" button to load custom trajectory data
 4. Select a JSON file containing trajectory coordinates
-5. The trajectory will be plotted on the globe with a cyan color
-6. Use the "Clear Data" button to return to the default trajectory
+5. The trajectory will be plotted on both 2D and 3D maps
+6. Use drawing tools to create analysis areas
+7. Use the "Clear Data" button to return to the default trajectory
 
 ### Features
 
-- **Real-time plotting**: Uploaded trajectories are immediately visualized
+**Trajectory Visualization:**
+- **Real-time plotting**: Uploaded trajectories are immediately visualized on both maps
 - **Visual distinction**: Uploaded data appears in cyan, default data in yellow
-- **Camera positioning**: The view automatically centers on the trajectory
+- **Auto-centering**: Views automatically center on the trajectory bounds
+- **Start/end markers**: Clear indicators for trajectory beginning and end points
+
+**Drawing Tools:**
+- **Polygon drawing**: Click to add points, right-click to finish
+- **Circle drawing**: Click for center, click again to set radius
+- **Real-time feedback**: Visual indicators during drawing process
+- **Cross-platform**: Works identically on both 2D and 3D maps
+
+**User Experience:**
+- **Theme integration**: Maps automatically adapt to light/dark themes
 - **Chat feedback**: Success/error messages appear in the chat panel
 - **Data validation**: Only valid coordinate arrays are accepted
+- **Status indicators**: Real-time status of map mode, trajectory, and drawing state
+
+**Controls:**
+- **Zoom controls**: Zoom in/out buttons work for both map types
+- **Reset view**: Return to trajectory bounds or default view
+- **Fullscreen**: Toggle fullscreen mode for immersive experience
+- **Clear functions**: Separate controls for clearing drawings and trajectory data
 
 A sample trajectory file (`sample-trajectory.json`) is included in the project root for testing.
 
