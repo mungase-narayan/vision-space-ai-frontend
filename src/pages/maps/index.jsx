@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   Map,
   Upload,
@@ -17,9 +17,24 @@ import {
   ToggleRight,
   Menu,
   X,
-  ArrowLeft
+  ArrowLeft,
+  Bot,
+  Copy,
+  Sparkles,
+  Loader,
+  GlobeIcon,
+  Square
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import { format } from "date-fns";
+import { v4 as uuid } from "uuid";
+
+import { useAuth } from "@/hooks";
+import { useApp } from "@/providers/app-provider";
+import { MDX } from "@/components";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Textarea } from "@/components/ui/textarea";
 
 import CesiumViewer from "./components/cesium-viewer";
 import Map2D from "./components/map-2d";
@@ -35,59 +50,143 @@ import { cn } from "@/lib/utils";
 
 const MapsDashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { defaultModel } = useApp();
+
   const [is3D, setIs3D] = useState(false);
   const [chatPanelOpen, setChatPanelOpen] = useState(true);
   const [drawingMode, setDrawingMode] = useState(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const cesiumViewerRef = useRef(null);
   const map2DRef = useRef(null);
+  const textareaRef = useRef(null);
+
+  // Chat state
   const [chatMessages, setChatMessages] = useState([
     {
-      id: 1,
-      type: "assistant",
-      content: "Welcome to the Maps Dashboard! I can help you analyze geographical data, upload files, and interact with the map. What would you like to explore today?",
-      timestamp: new Date()
+      id: uuid(),
+      role: "assistant",
+      content: "Welcome to the Maps Dashboard! I can help you analyze geographical data, upload trajectory files, and interact with the map. What would you like to explore today?",
+      createdAt: new Date().toISOString()
     }
   ]);
   const [inputMessage, setInputMessage] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [streamId, setStreamId] = useState(null);
+  const [webSearch, setWebSearch] = useState(false);
+
+  // File and trajectory state
   const [uploadedFiles, setUploadedFiles] = useState([]);
   const [trajectoryData, setTrajectoryData] = useState(null);
   const fileInputRef = useRef(null);
   const mapFileInputRef = useRef(null);
 
-  const handleSendMessage = () => {
-    if (!inputMessage.trim()) return;
+  const handleSendMessage = async () => {
+    if (!inputMessage.trim()) {
+      toast.error("Please enter a message!");
+      return;
+    }
 
-    const newMessage = {
-      id: Date.now(),
-      type: "user",
+    // Reset textarea height
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+    }
+
+    // Add user message
+    const userMessage = {
+      id: uuid(),
+      role: "user",
       content: inputMessage,
-      timestamp: new Date()
+      createdAt: new Date().toISOString(),
+      allFiles: uploadedFiles
     };
 
-    setChatMessages(prev => [...prev, newMessage]);
+    setChatMessages(prev => [...prev, userMessage]);
     setInputMessage("");
+    setUploadedFiles([]);
+    setIsStreaming(true);
 
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "I can help you analyze oceanographic data. What specific ARGO float measurements would you like to explore?",
-        "I see you're interested in ocean data analysis. Would you like me to help with temperature, salinity, or trajectory visualization?",
-        "Let me assist you with the ARGO float data. I can help with data analysis, trajectory mapping, or oceanographic insights.",
-        "I'm ready to help with your oceanographic analysis. You can upload ARGO data files or ask me about specific ocean regions."
-      ];
+    // Simulate AI streaming response
+    const aiMessageId = uuid();
+    const aiMessage = {
+      id: aiMessageId,
+      role: "assistant",
+      content: "",
+      createdAt: new Date().toISOString()
+    };
 
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
+    setChatMessages(prev => [...prev, aiMessage]);
 
-      const aiResponse = {
-        id: Date.now() + 1,
-        type: "assistant",
-        content: randomResponse,
-        timestamp: new Date()
-      };
-      setChatMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+    // Simulate streaming response
+    const responses = [
+      "I can help you analyze oceanographic data and trajectory patterns. Based on your map interaction, I can provide insights about:\n\n• **Trajectory Analysis**: Understanding movement patterns and ocean currents\n• **Geographical Context**: Interpreting the spatial distribution of your data\n• **Data Visualization**: Optimizing how your trajectory data is displayed\n• **Drawing Tools**: Using polygons and circles for area analysis\n\nWhat specific aspect would you like to explore?",
+
+      "I see you're working with trajectory data on the maps dashboard. Here are some ways I can assist:\n\n• **Data Upload**: Help you format and upload trajectory JSON files\n• **Visualization**: Explain the differences between 2D and 3D map views\n• **Analysis Tools**: Guide you through using drawing tools for spatial analysis\n• **Oceanographic Insights**: Provide context about ARGO float data and ocean patterns\n\nWhat would you like to know more about?",
+
+      "Great question about the maps functionality! I can help you with:\n\n• **Trajectory Plotting**: Understanding how coordinate data is visualized\n• **Map Controls**: Using zoom, pan, and drawing tools effectively\n• **Data Formats**: Working with JSON coordinate arrays\n• **Spatial Analysis**: Creating study areas with polygons and circles\n\nFeel free to ask about any specific feature or upload your own trajectory data to get started!",
+
+      "I'm here to help with your mapping and data analysis needs. Whether you're working with:\n\n• **ARGO Float Data**: Understanding oceanographic measurements\n• **Trajectory Visualization**: Plotting movement patterns over time\n• **Spatial Analysis**: Using drawing tools for research areas\n• **Data Integration**: Combining multiple datasets on the map\n\nJust let me know what you'd like to explore, or try uploading your own trajectory data!"
+    ];
+
+    const selectedResponse = responses[Math.floor(Math.random() * responses.length)];
+
+    // Simulate typing effect
+    let currentText = "";
+    const words = selectedResponse.split(" ");
+
+    for (let i = 0; i < words.length; i++) {
+      await new Promise(resolve => setTimeout(resolve, 50 + Math.random() * 100));
+      currentText += (i > 0 ? " " : "") + words[i];
+
+      setChatMessages(prev =>
+        prev.map(msg =>
+          msg.id === aiMessageId
+            ? { ...msg, content: currentText }
+            : msg
+        )
+      );
+    }
+
+    setIsStreaming(false);
   };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
+  };
+
+  const handleTextareaChange = (e) => {
+    setInputMessage(e.target.value);
+
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
+    }
+  };
+
+  const handleCopyMessage = async (content) => {
+    try {
+      await navigator.clipboard.writeText(content);
+      toast.success("Message copied to clipboard");
+    } catch (err) {
+      toast.error("Failed to copy message");
+    }
+  };
+
+  const handleStopStreaming = () => {
+    setIsStreaming(false);
+    setStreamId(null);
+  };
+
+  // Auto-scroll to bottom when new messages are added
+  useEffect(() => {
+    const scrollContainer = document.querySelector('.chat-messages-scroll [data-radix-scroll-area-viewport]');
+    if (scrollContainer) {
+      scrollContainer.scrollTop = scrollContainer.scrollHeight;
+    }
+  }, [chatMessages]);
 
   const handleFileUpload = (event, source = "chat") => {
     const files = Array.from(event.target.files);
@@ -113,32 +212,35 @@ const MapsDashboard = () => {
 
                 // Add success message to chat
                 const successMessage = {
-                  id: Date.now(),
-                  type: "assistant",
-                  content: `Successfully loaded trajectory data with ${jsonData.length} coordinate points. The trajectory has been plotted on the 3D globe.`,
-                  timestamp: new Date()
+                  id: uuid(),
+                  role: "assistant",
+                  content: `✅ **Trajectory Data Loaded Successfully**\n\nI've loaded your trajectory data with **${jsonData.length} coordinate points**. The trajectory has been plotted on both the 2D and 3D maps.\n\n**What you can do now:**\n• Switch between 2D/3D views to explore the data\n• Use drawing tools to create analysis areas\n• Ask me questions about the trajectory patterns\n• Upload additional data files for comparison`,
+                  createdAt: new Date().toISOString()
                 };
                 setChatMessages(prev => [...prev, successMessage]);
+                toast.success("Trajectory data loaded successfully!");
               } else {
                 // Add error message to chat
                 const errorMessage = {
-                  id: Date.now(),
-                  type: "assistant",
-                  content: "The uploaded JSON file doesn't contain valid trajectory data. Please ensure it's an array of [longitude, latitude] coordinate pairs.",
-                  timestamp: new Date()
+                  id: uuid(),
+                  role: "assistant",
+                  content: "❌ **Invalid Trajectory Format**\n\nThe uploaded JSON file doesn't contain valid trajectory data. Please ensure your file contains an array of coordinate pairs in this format:\n\n```json\n[\n  [-9.857, 55.953],\n  [-9.925, 55.695],\n  [-10.024, 55.666]\n]\n```\n\nEach coordinate should be `[longitude, latitude]` with numeric values.",
+                  createdAt: new Date().toISOString()
                 };
                 setChatMessages(prev => [...prev, errorMessage]);
+                toast.error("Invalid trajectory data format");
               }
             }
           } catch (error) {
             // Add error message to chat
             const errorMessage = {
-              id: Date.now(),
-              type: "assistant",
-              content: "Failed to parse the uploaded JSON file. Please check the file format.",
-              timestamp: new Date()
+              id: uuid(),
+              role: "assistant",
+              content: "❌ **JSON Parse Error**\n\nFailed to parse the uploaded JSON file. Please ensure it's a valid JSON format and try again.\n\n**Common issues:**\n• Missing commas between coordinates\n• Incorrect bracket formatting\n• Non-numeric coordinate values",
+              createdAt: new Date().toISOString()
             };
             setChatMessages(prev => [...prev, errorMessage]);
+            toast.error("Failed to parse JSON file");
           }
         };
         reader.readAsText(file);
@@ -194,12 +296,13 @@ const MapsDashboard = () => {
     setUploadedFiles(prev => prev.filter(file => !file.name.endsWith('.json')));
 
     const clearMessage = {
-      id: Date.now(),
-      type: "assistant",
-      content: "Trajectory data cleared. Showing default ARGO float trajectory.",
-      timestamp: new Date()
+      id: uuid(),
+      role: "assistant",
+      content: "🔄 **Trajectory Data Cleared**\n\nI've cleared the uploaded trajectory data and restored the default ARGO float trajectory. You can now:\n\n• Upload new trajectory data\n• Explore the default oceanographic data\n• Use the drawing tools for analysis\n• Ask questions about the current trajectory",
+      createdAt: new Date().toISOString()
     };
     setChatMessages(prev => [...prev, clearMessage]);
+    toast.success("Trajectory data cleared");
   };
 
   return (
@@ -221,98 +324,221 @@ const MapsDashboard = () => {
         </div>
 
         {/* Chat Messages */}
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4">
-            {chatMessages.length === 1 && (
-              <div className="space-y-2 mb-4">
-                <p className="text-xs text-muted-foreground">Quick suggestions:</p>
-                {[
-                  "Show ARGO float trajectory",
-                  "Upload JSON trajectory data",
-                  "Draw analysis polygon",
-                  "Create circular study area"
-                ].map((suggestion, index) => (
-                  <button
-                    key={index}
-                    className="block w-full text-left p-2 text-xs bg-card hover:bg-accent hover:text-accent-foreground rounded border border-border/30 hover:border-border/50 transition-all duration-200 shadow-sm"
-                    onClick={() => setInputMessage(suggestion)}
-                  >
-                    {suggestion}
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className="flex-1 overflow-hidden">
+          <ScrollArea className="h-full chat-messages-scroll">
+            <div className="p-4 space-y-4">
+              {chatMessages.length === 1 && (
+                <div className="space-y-2 mb-4">
+                  <p className="text-xs text-muted-foreground">Quick suggestions:</p>
+                  {[
+                    "Show ARGO float trajectory",
+                    "Upload JSON trajectory data",
+                    "Draw analysis polygon",
+                    "Create circular study area"
+                  ].map((suggestion, index) => (
+                    <button
+                      key={index}
+                      className="block w-full text-left p-2 text-xs bg-card hover:bg-accent hover:text-accent-foreground rounded border border-border/30 hover:border-border/50 transition-all duration-200 shadow-sm"
+                      onClick={() => setInputMessage(suggestion)}
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              )}
 
-            {chatMessages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex",
-                  message.type === "user" ? "justify-end" : "justify-start"
-                )}
-              >
+              {chatMessages.map((message, index) => (
                 <div
+                  key={message.id}
                   className={cn(
-                    "max-w-[80%] rounded-lg p-3 text-sm",
-                    message.type === "user"
-                      ? "bg-primary text-primary-foreground shadow-sm"
-                      : "bg-card text-card-foreground border border-border/50 shadow-sm"
+                    "py-2 group",
+                    message.role === "user" ? "bg-background" : "bg-gradient-to-br from-slate-50/80 to-slate-100/60 dark:from-slate-800/70 dark:to-slate-700/50 rounded-lg"
                   )}
                 >
-                  {message.content}
-                </div>
-              </div>
-            ))}
-          </div>
-        </ScrollArea>
+                  <div className="flex gap-3">
+                    {/* Avatar */}
+                    <div className="flex-shrink-0">
+                      {message.role === "user" ? (
+                        <Avatar className="h-7 w-7 ring-1 ring-slate-200 dark:ring-slate-700">
+                          <AvatarImage src={user?.avatar?.url} alt="User" />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs">
+                            {user?.fullName?.charAt(0) || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                      ) : (
+                        <div className="relative">
+                          <Avatar className="h-7 w-7 ring-2 ring-slate-300 dark:ring-slate-500">
+                            <AvatarFallback className="bg-gradient-to-br from-slate-600 via-slate-700 to-gray-700 dark:from-slate-500 dark:via-slate-600 dark:to-gray-600 text-white">
+                              <Bot className="h-3 w-3" />
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-gradient-to-r from-slate-500 to-gray-600 dark:from-slate-400 dark:to-gray-500 rounded-full flex items-center justify-center">
+                            <Sparkles className="h-1.5 w-1.5 text-white" />
+                          </div>
+                        </div>
+                      )}
+                    </div>
 
-        {/* File Upload Area */}
-        {uploadedFiles.length > 0 && (
-          <div className="p-4 border-t border-sidebar-border/20">
-            <h3 className="text-xs font-medium text-muted-foreground mb-2">Uploaded Files</h3>
-            <div className="space-y-2 max-h-20 overflow-y-auto">
-              {uploadedFiles.map((file) => (
-                <div key={file.id} className="flex items-center gap-2 text-xs bg-card border border-border/30 rounded p-2 shadow-sm">
-                  <FileText size={12} className="text-primary" />
-                  <span className="truncate flex-1 text-card-foreground">{file.name}</span>
-                  <span className="text-muted-foreground">{formatFileSize(file.size)}</span>
+                    {/* Message Content */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium text-xs bg-gradient-to-r from-slate-700 to-slate-900 dark:from-slate-200 dark:to-slate-100 bg-clip-text text-transparent">
+                          {message.role === "user" ? "You" : "AI Assistant"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {format(new Date(message.createdAt), "hh:mm a")}
+                        </span>
+                      </div>
+
+                      {/* Files */}
+                      {message.allFiles && message.allFiles.length > 0 && (
+                        <div className="flex items-center gap-2 mb-2 overflow-x-auto">
+                          {message.allFiles.map((file, i) => (
+                            <div key={i} className="flex items-center gap-1 text-xs bg-card border border-border/30 rounded px-2 py-1 whitespace-nowrap">
+                              <FileText size={10} className="text-primary" />
+                              <span className="truncate max-w-20">{file.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {/* Message Text */}
+                      <div className={cn(
+                        "text-sm",
+                        message.role === "assistant" && "prose dark:prose-invert prose-sm max-w-none"
+                      )}>
+                        {message.role === "user" ? (
+                          <p className="whitespace-pre-wrap break-words leading-relaxed">
+                            {message.content}
+                          </p>
+                        ) : (
+                          <div className="relative">
+                            <MDX content={message.content} />
+                            {/* Loading indicator for streaming */}
+                            {isStreaming && index === chatMessages.length - 1 && (
+                              <div className="flex items-center gap-2 mt-2 text-xs text-muted-foreground">
+                                <Loader size={12} className="animate-spin" />
+                                <span>AI is thinking...</span>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center justify-end gap-1 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 w-6 p-0"
+                          onClick={() => handleCopyMessage(message.content)}
+                          title="Copy message"
+                        >
+                          <Copy size={10} />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          </ScrollArea>
+        </div>
 
         {/* Chat Input */}
-        <div className="p-4 border-t border-sidebar-border/20">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Input
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                placeholder="Ask about the map..."
-                className="pr-10 h-9 text-sm"
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-              />
-              <Button
-                size="sm"
-                variant="ghost"
-                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7 p-0"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Paperclip size={12} />
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                multiple
-                className="hidden"
-                onChange={(e) => handleFileUpload(e, "chat")}
-              />
+        <div className="flex-shrink-0 p-4 border-t border-sidebar-border/20">
+          {/* Uploaded Files Display */}
+          {uploadedFiles.length > 0 && (
+            <div className="mb-3 flex items-center gap-2 overflow-x-auto pb-2">
+              {uploadedFiles.map((file) => (
+                <div key={file.id} className="flex items-center gap-1 text-xs bg-card border border-border/30 rounded px-2 py-1 whitespace-nowrap">
+                  <FileText size={10} className="text-primary" />
+                  <span className="truncate max-w-20">{file.name}</span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-4 w-4 p-0 ml-1"
+                    onClick={() => setUploadedFiles(prev => prev.filter(f => f.id !== file.id))}
+                  >
+                    <X size={8} />
+                  </Button>
+                </div>
+              ))}
             </div>
-            <Button size="sm" onClick={handleSendMessage} className="h-9 px-3">
-              <Send size={12} />
-            </Button>
+          )}
+
+          <div className="flex items-end gap-2">
+            <div className="flex-1 relative border border-border rounded-lg shadow-sm">
+              <Textarea
+                ref={textareaRef}
+                placeholder="Ask about the map, upload data, or request analysis..."
+                value={inputMessage}
+                onChange={handleTextareaChange}
+                onKeyDown={handleKeyDown}
+                className="resize-none border-none shadow-none min-h-[44px] max-h-[120px] pt-3 pb-12"
+                rows={1}
+                disabled={isStreaming}
+              />
+
+              <div className="absolute bottom-2 right-2 flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isStreaming}
+                  title="Upload file"
+                >
+                  <Paperclip size={12} />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={cn(
+                    "h-7 w-7 p-0",
+                    webSearch && "bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400"
+                  )}
+                  onClick={() => setWebSearch(!webSearch)}
+                  disabled={isStreaming}
+                  title="Search the internet"
+                >
+                  <GlobeIcon size={12} />
+                </Button>
+
+                {isStreaming ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={handleStopStreaming}
+                    title="Stop generation"
+                  >
+                    <Square size={12} className="fill-current" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant={inputMessage.trim() ? "default" : "ghost"}
+                    size="sm"
+                    className="h-7 w-7 p-0"
+                    onClick={handleSendMessage}
+                    disabled={!inputMessage.trim()}
+                    title="Send message"
+                  >
+                    <Send size={12} />
+                  </Button>
+                )}
+              </div>
+            </div>
           </div>
+
+          <input
+            ref={fileInputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={(e) => handleFileUpload(e, "chat")}
+          />
         </div>
       </div>
 
