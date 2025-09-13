@@ -39,7 +39,7 @@ const CesiumViewer = React.forwardRef(({ is3D, onDrawingModeChange, drawingMode,
         };
 
         const initializeCesium = () => {
-            if (!window.Cesium || !cesiumContainerRef.current) return;
+            if (!window.Cesium || !cesiumContainerRef.current || viewerRef.current) return;
 
             // Set Cesium Ion access token
             window.Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIxOGQ0ZDU3Yi1jNTU1LTRmMWItYTU0NC0yMzZhOWUzMWIwZjMiLCJpZCI6MzQwMDc3LCJpYXQiOjE3NTc0OTk5OTB9.pTzK7CubJmdOAfVLfmogsLMFfBaJMo44wz4yH4zYrqU';
@@ -59,12 +59,6 @@ const CesiumViewer = React.forwardRef(({ is3D, onDrawingModeChange, drawingMode,
                 infoBox: false,
                 selectionIndicator: false,
             });
-
-            // Apply theme-based styling
-            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-            if (isDark) {
-                viewerRef.current.scene.backgroundColor = window.Cesium.Color.fromCssColorString('#0f172a');
-            }
 
             // Plot trajectory data
             plotTrajectoryData();
@@ -419,7 +413,17 @@ const CesiumViewer = React.forwardRef(({ is3D, onDrawingModeChange, drawingMode,
                 viewerRef.current = null;
             }
         };
-    }, [is3D, theme]);
+    }, [is3D]);
+
+    // Effect to handle theme changes without reinitializing
+    useEffect(() => {
+        if (viewerRef.current && window.Cesium) {
+            const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            viewerRef.current.scene.backgroundColor = isDark
+                ? window.Cesium.Color.fromCssColorString('#0f172a')
+                : window.Cesium.Color.fromCssColorString('#87CEEB'); // Light blue for light theme
+        }
+    }, [theme]);
 
     // Effect to handle drawing mode changes
     useEffect(() => {

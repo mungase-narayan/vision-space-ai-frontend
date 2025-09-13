@@ -7,8 +7,7 @@ const Map2D = React.forwardRef(({ is3D, drawingMode, onDrawingModeChange, onDraw
   const mapRef = useRef(null);
   const drawingLayerRef = useRef(null);
   const trajectoryLayerRef = useRef(null);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [currentDrawing, setCurrentDrawing] = useState(null);
+
 
   // Expose map through ref
   React.useImperativeHandle(ref, () => ({
@@ -58,21 +57,16 @@ const Map2D = React.forwardRef(({ is3D, drawingMode, onDrawingModeChange, onDraw
         zoomControl: false
       });
 
-      // Add tile layer based on theme
-      const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-      const tileLayer = isDark
-        ? window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 20
-        })
-        : window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-          maxZoom: 20
-        });
+      // Add default tile layer (will be updated by theme effect)
+      const tileLayer = window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 20
+      });
 
       tileLayer.addTo(mapRef.current);
+
+      // Store reference to tile layer for theme switching
+      mapRef.current._tileLayer = tileLayer;
 
       // Create drawing layer
       drawingLayerRef.current = window.L.layerGroup().addTo(mapRef.current);
@@ -241,7 +235,34 @@ const Map2D = React.forwardRef(({ is3D, drawingMode, onDrawingModeChange, onDraw
         mapRef.current = null;
       }
     };
-  }, [is3D, theme]);
+  }, [is3D]);
+
+  // Effect to handle theme changes without reinitializing
+  useEffect(() => {
+    if (mapRef.current && window.L && !is3D) {
+      const isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+      // Remove existing tile layer
+      if (mapRef.current._tileLayer) {
+        mapRef.current.removeLayer(mapRef.current._tileLayer);
+      }
+
+      // Add new tile layer based on theme
+      const tileLayer = isDark
+        ? window.L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 20
+        })
+        : window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 20
+        });
+
+      tileLayer.addTo(mapRef.current);
+      mapRef.current._tileLayer = tileLayer;
+    }
+  }, [theme, is3D]);
 
   // Effect to handle trajectory data changes
   useEffect(() => {
