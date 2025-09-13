@@ -70,95 +70,52 @@ const CesiumViewer = React.forwardRef(({ is3D, onDrawingModeChange, drawingMode,
         const plotTrajectoryData = () => {
             if (!viewerRef.current || !window.Cesium) return;
 
-            // Default mock data if no trajectory data is provided
+            // Default trajectory data (ARGO float trajectory in Atlantic Ocean - stays in ocean waters)
             const defaultTrajectory = [
-                [-9.857, 55.953],
-                [-9.925, 55.695],
-                [-10.024, 55.666],
-                [-9.986, 55.492],
-                [-9.825, 55.439],
-                [-9.712, 55.321],
-                [-9.743, 55.198],
-                [-9.989, 55.202],
-                [-10.059, 55.142],
-                [-10.105, 55.066],
-                [-10.221, 54.957],
-                [-10.151, 54.768],
-                [-10.25, 54.724],
-                [-10.158, 54.561],
-                [-10.114, 54.538],
-                [-10.232, 54.476],
-                [-10.318, 54.519],
-                [-10.145, 54.781],
-                [-10.326, 54.926],
-                [-10.48, 54.816],
-                [-10.462, 54.622],
-                [-9.912, 54.05],
-                [-9.638, 53.872],
-                [-9.265, 51.97],
-                [-9.211, 51.855],
-                [-9.329, 51.539],
-                [-9.278, 51.532],
-                [-9.096, 51.515],
-                [-9.121, 50.968],
-                [-9.746, 50.338],
-                [-9.767, 50.009],
-                [-9.687, 49.661],
-                [-9.976, 49.439],
-                [-10.5, 48.909],
-                [-10.768, 48.779],
-                [-11.298, 48.441],
-                [-11.27, 48.626],
-                [-11.456, 47.485],
-                [-11.309, 47.268],
-                [-11.254, 47.419],
-                [-11.534, 47.242],
-                [-11.782, 47.207],
-                [-11.834, 46.818],
-                [-12.083, 47.147],
-                [-11.565, 47.577],
-                [-11.756, 47.298],
-                [-11.998, 47.161],
-                [-12.368, 47.239],
-                [-12.335, 47.467],
-                [-12.162, 47.161],
-                [-11.861, 46.745],
-                [-11.729, 46.642],
-                [-11.759, 46.567],
-                [-11.775, 47.377],
-                [-10.918, 47.34],
-                [-11.047, 45.519],
-                [-11.113, 44.803],
-                [-10.635, 44.602],
-                [-10.838, 44.305],
-                [-11.295, 44.251],
-                [-11.039, 43.669],
-                [-10.621, 42.856],
-                [-10.658, 42.343],
-                [-10.326, 42.032],
-                [-10.644, 41.592],
-                [-11.151, 41.411],
-                [-10.958, 41.303],
-                [-10.057, 40.944],
-                [-10.1, 40.879],
-                [-10.093, 40.764],
-                [-10.144, 40.745],
-                [-9.918, 40.713],
-                [-10.281, 41.028],
-                [-10.169, 40.855],
-                [-9.987, 40.709],
-                [-9.875, 40.533],
-                [-9.741, 40.353],
-                [-9.605, 40.155],
-                [-9.414, 40.07],
-                [-9.374, 40.057],
-                [-9.089, 39.889],
-                [-8.747, 39.816],
-                [-8.46, 39.717]
+                [-15.2, 60.1],   // North Atlantic, west of Scotland
+                [-15.8, 59.3],   // Moving southwest in deep ocean
+                [-16.5, 58.2],   // Continuing in Atlantic
+                [-17.1, 57.1],   // Deep Atlantic waters
+                [-17.8, 55.9],   // West of Ireland in ocean
+                [-18.2, 54.7],   // Atlantic Ocean
+                [-18.9, 53.4],   // Deep ocean west of Ireland
+                [-19.3, 52.1],   // Atlantic Ocean
+                [-19.8, 50.8],   // Bay of Biscay area (ocean)
+                [-20.1, 49.5],   // Atlantic Ocean
+                [-20.5, 48.2],   // Deep Atlantic
+                [-20.9, 46.9],   // Atlantic Ocean
+                [-21.2, 45.6],   // Deep ocean
+                [-21.6, 44.3],   // Atlantic Ocean
+                [-22.0, 43.0],   // Ocean west of Spain
+                [-22.3, 41.7],   // Atlantic Ocean
+                [-22.7, 40.4],   // Deep Atlantic
+                [-23.0, 39.1],   // Ocean west of Portugal
+                [-23.4, 37.8],   // Atlantic Ocean
+                [-23.7, 36.5],   // Deep ocean
+                [-24.1, 35.2],   // Atlantic Ocean
+                [-24.4, 33.9],   // Ocean waters
+                [-24.8, 32.6],   // Atlantic Ocean
+                [-25.1, 31.3],   // Deep ocean
+                [-25.5, 30.0],   // Atlantic Ocean
+                [-25.8, 28.7],   // Ocean near Canary Islands
+                [-26.2, 27.4],   // Atlantic Ocean
+                [-26.5, 26.1],   // Deep ocean
+                [-26.9, 24.8],   // Atlantic Ocean
+                [-27.2, 23.5],   // Ocean waters
+                [-27.6, 22.2],   // Atlantic Ocean
+                [-27.9, 20.9],   // Deep ocean
+                [-28.3, 19.6],   // Atlantic Ocean
+                [-28.6, 18.3],   // Ocean waters
+                [-29.0, 17.0],   // Atlantic Ocean
+                [-29.3, 15.7],   // Deep ocean
+                [-29.7, 14.4],   // Atlantic Ocean
+                [-30.0, 13.1],   // Ocean waters
+                [-30.4, 11.8],   // Atlantic Ocean
+                [-30.7, 10.5]    // Deep Atlantic Ocean
             ];
 
-            // Use uploaded trajectory data or default data
-            const currentTrajectory = trajectoryData || defaultTrajectory;
+            // Use default trajectory for initial load (uploaded data handled by useEffect)
+            const currentTrajectory = defaultTrajectory;
             const lastKnownPosition = currentTrajectory[currentTrajectory.length - 1];
 
             // Remove existing trajectory entities
@@ -439,145 +396,160 @@ const CesiumViewer = React.forwardRef(({ is3D, onDrawingModeChange, drawingMode,
     // Effect to handle trajectory data changes
     useEffect(() => {
         if (viewerRef.current && window.Cesium && is3D) {
-            // Re-plot trajectory when data changes
-            const plotTrajectoryData = () => {
-                // Default mock data if no trajectory data is provided
-                const defaultTrajectory = [
-                    [-9.857, 55.953],
-                    [-9.925, 55.695],
-                    [-10.024, 55.666],
-                    [-9.986, 55.492],
-                    [-9.825, 55.439],
-                    [-9.712, 55.321],
-                    [-9.743, 55.198],
-                    [-9.989, 55.202],
-                    [-10.059, 55.142],
-                    [-10.105, 55.066],
-                    [-10.221, 54.957],
-                    [-10.151, 54.768],
-                    [-10.25, 54.724],
-                    [-10.158, 54.561],
-                    [-10.114, 54.538],
-                    [-10.232, 54.476],
-                    [-10.318, 54.519],
-                    [-10.145, 54.781],
-                    [-10.326, 54.926],
-                    [-10.48, 54.816],
-                    [-10.462, 54.622],
-                    [-9.912, 54.05],
-                    [-9.638, 53.872],
-                    [-9.265, 51.97],
-                    [-9.211, 51.855],
-                    [-9.329, 51.539],
-                    [-9.278, 51.532],
-                    [-9.096, 51.515],
-                    [-9.121, 50.968],
-                    [-9.746, 50.338],
-                    [-9.767, 50.009],
-                    [-9.687, 49.661],
-                    [-9.976, 49.439],
-                    [-10.5, 48.909],
-                    [-10.768, 48.779],
-                    [-11.298, 48.441],
-                    [-11.27, 48.626],
-                    [-11.456, 47.485],
-                    [-11.309, 47.268],
-                    [-11.254, 47.419],
-                    [-11.534, 47.242],
-                    [-11.782, 47.207],
-                    [-11.834, 46.818],
-                    [-12.083, 47.147],
-                    [-11.565, 47.577],
-                    [-11.756, 47.298],
-                    [-11.998, 47.161],
-                    [-12.368, 47.239],
-                    [-12.335, 47.467],
-                    [-12.162, 47.161],
-                    [-11.861, 46.745],
-                    [-11.729, 46.642],
-                    [-11.759, 46.567],
-                    [-11.775, 47.377],
-                    [-10.918, 47.34],
-                    [-11.047, 45.519],
-                    [-11.113, 44.803],
-                    [-10.635, 44.602],
-                    [-10.838, 44.305],
-                    [-11.295, 44.251],
-                    [-11.039, 43.669],
-                    [-10.621, 42.856],
-                    [-10.658, 42.343],
-                    [-10.326, 42.032],
-                    [-10.644, 41.592],
-                    [-11.151, 41.411],
-                    [-10.958, 41.303],
-                    [-10.057, 40.944],
-                    [-10.1, 40.879],
-                    [-10.093, 40.764],
-                    [-10.144, 40.745],
-                    [-9.918, 40.713],
-                    [-10.281, 41.028],
-                    [-10.169, 40.855],
-                    [-9.987, 40.709],
-                    [-9.875, 40.533],
-                    [-9.741, 40.353],
-                    [-9.605, 40.155],
-                    [-9.414, 40.07],
-                    [-9.374, 40.057],
-                    [-9.089, 39.889],
-                    [-8.747, 39.816],
-                    [-8.46, 39.717]
-                ];
+            // Default trajectory data (ARGO float trajectory in Atlantic Ocean - stays in ocean waters)
+            const defaultTrajectory = [
+                [-15.2, 60.1],   // North Atlantic, west of Scotland
+                [-15.8, 59.3],   // Moving southwest in deep ocean
+                [-16.5, 58.2],   // Continuing in Atlantic
+                [-17.1, 57.1],   // Deep Atlantic waters
+                [-17.8, 55.9],   // West of Ireland in ocean
+                [-18.2, 54.7],   // Atlantic Ocean
+                [-18.9, 53.4],   // Deep ocean west of Ireland
+                [-19.3, 52.1],   // Atlantic Ocean
+                [-19.8, 50.8],   // Bay of Biscay area (ocean)
+                [-20.1, 49.5],   // Atlantic Ocean
+                [-20.5, 48.2],   // Deep Atlantic
+                [-20.9, 46.9],   // Atlantic Ocean
+                [-21.2, 45.6],   // Deep ocean
+                [-21.6, 44.3],   // Atlantic Ocean
+                [-22.0, 43.0],   // Ocean west of Spain
+                [-22.3, 41.7],   // Atlantic Ocean
+                [-22.7, 40.4],   // Deep Atlantic
+                [-23.0, 39.1],   // Ocean west of Portugal
+                [-23.4, 37.8],   // Atlantic Ocean
+                [-23.7, 36.5],   // Deep ocean
+                [-24.1, 35.2],   // Atlantic Ocean
+                [-24.4, 33.9],   // Ocean waters
+                [-24.8, 32.6],   // Atlantic Ocean
+                [-25.1, 31.3],   // Deep ocean
+                [-25.5, 30.0],   // Atlantic Ocean
+                [-25.8, 28.7],   // Ocean near Canary Islands
+                [-26.2, 27.4],   // Atlantic Ocean
+                [-26.5, 26.1],   // Deep ocean
+                [-26.9, 24.8],   // Atlantic Ocean
+                [-27.2, 23.5],   // Ocean waters
+                [-27.6, 22.2],   // Atlantic Ocean
+                [-27.9, 20.9],   // Deep ocean
+                [-28.3, 19.6],   // Atlantic Ocean
+                [-28.6, 18.3],   // Ocean waters
+                [-29.0, 17.0],   // Atlantic Ocean
+                [-29.3, 15.7],   // Deep ocean
+                [-29.7, 14.4],   // Atlantic Ocean
+                [-30.0, 13.1],   // Ocean waters
+                [-30.4, 11.8],   // Atlantic Ocean
+                [-30.7, 10.5]    // Deep Atlantic Ocean
+            ];
 
-                // Use uploaded trajectory data or default data
-                const currentTrajectory = trajectoryData || defaultTrajectory;
-                const lastKnownPosition = currentTrajectory[currentTrajectory.length - 1];
+            // Use uploaded trajectory data or default data
+            const currentTrajectory = trajectoryData || defaultTrajectory;
 
-                // Remove existing trajectory entities
-                const entitiesToRemove = [];
-                viewerRef.current.entities.values.forEach(entity => {
-                    if (entity.name && (
-                        entity.name.includes('Trajectory') ||
-                        entity.name.includes('Last Known Position')
-                    )) {
-                        entitiesToRemove.push(entity);
-                    }
-                });
-                entitiesToRemove.forEach(entity => viewerRef.current.entities.remove(entity));
+            // Debug logging
+            console.log('Cesium 3D - Plotting trajectory:', {
+                isUploadedData: !!trajectoryData,
+                coordinateCount: currentTrajectory.length,
+                firstCoord: currentTrajectory[0],
+                lastCoord: currentTrajectory[currentTrajectory.length - 1],
+                sampleCoords: currentTrajectory.slice(0, 3)
+            });
 
-                // Add the Trajectory Path (Polyline)
-                viewerRef.current.entities.add({
-                    name: trajectoryData ? "Uploaded Trajectory" : "ARGO Float Trajectory",
-                    polyline: {
-                        positions: window.Cesium.Cartesian3.fromDegreesArray(currentTrajectory.flat()),
-                        width: 3,
-                        material: trajectoryData ? window.Cesium.Color.CYAN : window.Cesium.Color.YELLOW,
-                        clampToGround: true
-                    },
-                });
+            // Validate trajectory data format
+            if (!Array.isArray(currentTrajectory) || currentTrajectory.length === 0) {
+                console.warn('Invalid trajectory data format');
+                return;
+            }
 
-                // Add the Final Position (Point)
-                viewerRef.current.entities.add({
-                    name: "Last Known Position",
-                    position: window.Cesium.Cartesian3.fromDegrees(lastKnownPosition[0], lastKnownPosition[1]),
-                    point: {
-                        pixelSize: 10,
-                        color: trajectoryData ? window.Cesium.Color.LIME : window.Cesium.Color.RED,
-                        outlineColor: window.Cesium.Color.BLACK,
-                        outlineWidth: 2,
-                    },
-                });
+            // Validate coordinate format [longitude, latitude]
+            const isValidFormat = currentTrajectory.every(coord =>
+                Array.isArray(coord) && coord.length === 2 &&
+                typeof coord[0] === 'number' && typeof coord[1] === 'number' &&
+                coord[0] >= -180 && coord[0] <= 180 && // Valid longitude
+                coord[1] >= -90 && coord[1] <= 90     // Valid latitude
+            );
 
-                // Fly the camera to the trajectory location
-                viewerRef.current.camera.flyTo({
-                    destination: window.Cesium.Cartesian3.fromDegrees(lastKnownPosition[0], lastKnownPosition[1], 1000000),
-                    orientation: {
-                        heading: window.Cesium.Math.toRadians(0.0),
-                        pitch: window.Cesium.Math.toRadians(-60.0),
-                    }
-                });
-            };
+            if (!isValidFormat) {
+                console.warn('Invalid coordinate format. Expected [longitude, latitude] pairs.');
+                return;
+            }
 
-            plotTrajectoryData();
+            const lastKnownPosition = currentTrajectory[currentTrajectory.length - 1];
+
+            // Remove existing trajectory entities
+            const entitiesToRemove = [];
+            viewerRef.current.entities.values.forEach(entity => {
+                if (entity.name && (
+                    entity.name.includes('Trajectory') ||
+                    entity.name.includes('Last Known Position')
+                )) {
+                    entitiesToRemove.push(entity);
+                }
+            });
+            entitiesToRemove.forEach(entity => viewerRef.current.entities.remove(entity));
+
+            // Convert trajectory to flat array for Cesium: [lng, lat, lng, lat, ...]
+            const flatCoordinates = currentTrajectory.flat();
+
+            // Add the Trajectory Path (Polyline)
+            viewerRef.current.entities.add({
+                name: trajectoryData ? "Uploaded Trajectory" : "ARGO Float Trajectory",
+                polyline: {
+                    positions: window.Cesium.Cartesian3.fromDegreesArray(flatCoordinates),
+                    width: 3,
+                    material: trajectoryData ? window.Cesium.Color.CYAN : window.Cesium.Color.YELLOW,
+                    clampToGround: true
+                },
+            });
+
+            // Add start position marker
+            const startPosition = currentTrajectory[0];
+            viewerRef.current.entities.add({
+                name: "Start Position",
+                position: window.Cesium.Cartesian3.fromDegrees(startPosition[0], startPosition[1]),
+                point: {
+                    pixelSize: 8,
+                    color: window.Cesium.Color.GREEN,
+                    outlineColor: window.Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                },
+            });
+
+            // Add the Final Position (Point)
+            viewerRef.current.entities.add({
+                name: "Last Known Position",
+                position: window.Cesium.Cartesian3.fromDegrees(lastKnownPosition[0], lastKnownPosition[1]),
+                point: {
+                    pixelSize: 10,
+                    color: trajectoryData ? window.Cesium.Color.LIME : window.Cesium.Color.RED,
+                    outlineColor: window.Cesium.Color.BLACK,
+                    outlineWidth: 2,
+                },
+            });
+
+            // Calculate trajectory bounds for better camera positioning
+            const lngs = currentTrajectory.map(coord => coord[0]);
+            const lats = currentTrajectory.map(coord => coord[1]);
+            const minLng = Math.min(...lngs);
+            const maxLng = Math.max(...lngs);
+            const minLat = Math.min(...lats);
+            const maxLat = Math.max(...lats);
+
+            // Calculate center and appropriate height
+            const centerLng = (minLng + maxLng) / 2;
+            const centerLat = (minLat + maxLat) / 2;
+            const latRange = maxLat - minLat;
+            const lngRange = maxLng - minLng;
+            const maxRange = Math.max(latRange, lngRange);
+
+            // Calculate appropriate camera height based on trajectory extent
+            const cameraHeight = Math.max(500000, maxRange * 111000 * 2); // Convert degrees to meters roughly
+
+            // Fly the camera to show the entire trajectory
+            viewerRef.current.camera.flyTo({
+                destination: window.Cesium.Cartesian3.fromDegrees(centerLng, centerLat, cameraHeight),
+                orientation: {
+                    heading: window.Cesium.Math.toRadians(0.0),
+                    pitch: window.Cesium.Math.toRadians(-45.0),
+                }
+            });
         }
     }, [trajectoryData, is3D]);
 
