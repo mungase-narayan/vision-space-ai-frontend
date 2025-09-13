@@ -731,8 +731,8 @@ const MapsDashboard = () => {
             </Card>
           </div>
 
-          {/* Drawing Controls (Left Side) - Show in both 2D and 3D modes */}
-          <div className="absolute left-4 top-4 z-50">
+          {/* Drawing Controls (Bottom Center) - Show in both 2D and 3D modes */}
+          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-50">
             <DrawingControls
               drawingMode={drawingMode}
               onDrawingModeChange={handleDrawingModeChange}

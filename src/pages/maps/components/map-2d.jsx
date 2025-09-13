@@ -7,6 +7,7 @@ const Map2D = React.forwardRef(({ is3D, drawingMode, onDrawingModeChange, onDraw
   const mapRef = useRef(null);
   const drawingLayerRef = useRef(null);
   const trajectoryLayerRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
 
 
   // Expose map through ref
