@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import {
   SignUpPage,
@@ -16,6 +16,7 @@ import {
   Users,
   UsersHistory,
   VisualizePage,
+  MapsDashboard,
 } from "./pages";
 
 import {
