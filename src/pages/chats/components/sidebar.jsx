@@ -329,7 +329,7 @@ export default function ChatsSidebar() {
                                 className={cn(
                                   "w-full h-full py-2 px-2 text-start justify-start flex items-center gap-2 rounded-md transition-all duration-200 group-hover:shadow-sm",
                                   selectedTabId === tab._id
-                                    ? "bg-primary/8 border border-primary/15 shadow-sm"
+                                    ? "bg-sky-300/20 border border-primary/15 shadow-sm"
                                     : "hover:bg-sidebar-accent/30 border border-transparent hover:border-sidebar-border/20"
                                 )}
                               >
@@ -365,7 +365,6 @@ export default function ChatsSidebar() {
                     );
                   }
                 )}
-              <Separator />
             </div>
           </ScrollArea>
 

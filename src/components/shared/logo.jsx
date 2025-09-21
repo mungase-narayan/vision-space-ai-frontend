@@ -12,7 +12,7 @@ const Logo = () => {
       <div
         className="
           w-8 h-8 flex items-center justify-center
-          rounded-md bg-gradient-to-tr from-indigo-500 to-purple-500
+          rounded-md bg-gradient-to-tr from-sky-400 to-sky-600
           text-white shadow-sm
         "
       >
@@ -20,8 +20,8 @@ const Logo = () => {
       </div>
       <p
         className="
-          bg-gradient-to-r from-indigo-600 to-purple-600
-          dark:from-indigo-400 dark:to-purple-400
+          bg-gradient-to-r from-sky-500 to-sky-700
+          dark:from-sky-300 dark:to-sky-500
           bg-clip-text text-transparent
         "
       >
