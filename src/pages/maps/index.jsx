@@ -210,11 +210,18 @@ const MapsDashboard = () => {
               if (isValidTrajectory) {
                 setTrajectoryData(jsonData);
 
+                // Determine coordinate format for user feedback
+                const firstCoord = jsonData[0];
+                const isLikelyLatLng = Math.abs(firstCoord[0]) <= 90 && Math.abs(firstCoord[1]) > 90;
+                const formatNote = isLikelyLatLng ?
+                  "\n\n**Note:** Your coordinates appear to be in [latitude, longitude] format. I've automatically converted them to the standard [longitude, latitude] format for proper display." :
+                  "";
+
                 // Add success message to chat
                 const successMessage = {
                   id: uuid(),
                   role: "assistant",
-                  content: `✅ **Trajectory Data Loaded Successfully**\n\nI've loaded your trajectory data with **${jsonData.length} coordinate points**. The trajectory has been plotted on both the 2D and 3D maps.\n\n**What you can do now:**\n• Switch between 2D/3D views to explore the data\n• Use drawing tools to create analysis areas\n• Ask me questions about the trajectory patterns\n• Upload additional data files for comparison`,
+                  content: `✅ **Trajectory Data Loaded Successfully**\n\nI've loaded your trajectory data with **${jsonData.length} coordinate points**. The trajectory has been plotted on both the 2D and 3D maps.${formatNote}\n\n**What you can do now:**\n• Switch between 2D/3D views to explore the data\n• Use drawing tools to create analysis areas\n• Ask me questions about the trajectory patterns\n• Upload additional data files for comparison`,
                   createdAt: new Date().toISOString()
                 };
                 setChatMessages(prev => [...prev, successMessage]);
@@ -224,7 +231,7 @@ const MapsDashboard = () => {
                 const errorMessage = {
                   id: uuid(),
                   role: "assistant",
-                  content: "❌ **Invalid Trajectory Format**\n\nThe uploaded JSON file doesn't contain valid trajectory data. Please ensure your file contains an array of coordinate pairs in this format:\n\n```json\n[\n  [-9.857, 55.953],\n  [-9.925, 55.695],\n  [-10.024, 55.666]\n]\n```\n\nEach coordinate should be `[longitude, latitude]` with numeric values.",
+                  content: "❌ **Invalid Trajectory Format**\n\nThe uploaded JSON file doesn't contain valid trajectory data. Please ensure your file contains an array of coordinate pairs in one of these formats:\n\n```json\n[\n  [longitude, latitude],\n  [longitude, latitude]\n]\n```\n\n**OR**\n\n```json\n[\n  [latitude, longitude],\n  [latitude, longitude]\n]\n```\n\nI can automatically detect and convert between formats. Each coordinate should contain numeric values within valid ranges.",
                   createdAt: new Date().toISOString()
                 };
                 setChatMessages(prev => [...prev, errorMessage]);
