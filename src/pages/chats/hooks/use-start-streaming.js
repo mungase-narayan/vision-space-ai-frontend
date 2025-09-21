@@ -106,11 +106,8 @@ const useStartStreaming = () => {
         // Enhance chart based on context
         const enhancedChart = enhanceChart(convertedChart, lastUserMessage);
 
-        // Add the processed chart as a code block
-        const chartJson = JSON.stringify(enhancedChart, null, 2);
-        content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
-
-        console.log('Final processed chart:', enhancedChart);
+        // Skip adding static plotly charts - let dynamic system handle it
+        console.log('Skipping static chart generation - using dynamic charts instead');
       } else {
         // Only generate fallback charts for explicit visualization requests
         const userWantsVisualization = lastUserMessage.toLowerCase().match(
@@ -126,11 +123,8 @@ const useStartStreaming = () => {
             // Apply enhancements to fallback chart
             const enhancedChart = enhanceChart(fallbackChart, lastUserMessage);
 
-            // Add the generated chart as a code block
-            const chartJson = JSON.stringify(enhancedChart, null, 2);
-            content += `\n\n\`\`\`plotly\n${chartJson}\n\`\`\``;
-
-            console.log('Final fallback chart:', enhancedChart);
+            // Skip adding static fallback charts - let dynamic system handle it
+            console.log('Skipping static fallback chart - using dynamic charts instead');
           }
         } else {
           console.log('No chart from backend and user did not request visualization, skipping chart generation');

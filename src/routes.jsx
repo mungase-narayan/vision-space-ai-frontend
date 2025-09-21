@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import {
   SignUpPage,
@@ -9,14 +9,14 @@ import {
   ResetPassword,
   VerifyUser,
   Profile,
-  ViewModel,
   Setting,
   Chats,
   HomeV1,
-  UnderReview,
   AcceptInvitation,
   Users,
   UsersHistory,
+  VisualizePage,
+  MapsDashboard,
 } from "./pages";
 
 import {
@@ -67,6 +67,12 @@ const AppRoutes = () => {
             <Route path="chats" element={<ChatsLayout />}>
               <Route index element={<Chats />} />
             </Route>
+
+            <Route path="visualize" element={<VisualizePage />} />
+
+            <Route path="maps" element={<MapsDashboard />} />
+
+            <Route path="visualize" element={<VisualizePage />} />
 
             <Route path="dashboard" element={<DashboardLayout />}>
               <Route path="profile" element={<Profile />} />

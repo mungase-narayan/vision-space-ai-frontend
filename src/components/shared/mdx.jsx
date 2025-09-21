@@ -14,6 +14,8 @@ import "highlight.js/styles/github.css";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ChartRenderer, { ENGINE } from "./chart-renderer";
+import DynamicChartGenerator from "./dynamic-chart-generator";
+import { responseDataExtractor } from "@/lib/response-data-extractor";
 
 export const FOCUS_VISIBLE_OUTLINE = `focus:outline-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary`;
 export const LINK_STYLES = `decoration-none text-primary transition-all hover:text-primary`;
@@ -285,7 +287,18 @@ const config = {
   },
 };
 
-const MDX = ({ content }) => {
+const MDX = ({ content, model }) => {
+  // Check for dynamic chart data
+  const shouldShowChart = React.useMemo(() => {
+    if (typeof content !== "string") return false;
+
+    // Always check for chartable data since we disabled static charts
+    const hasChartData = responseDataExtractor.hasChartableData(content);
+    console.log('MDX - Should show chart:', hasChartData);
+    console.log('MDX - Content preview:', content.substring(0, 200) + '...');
+    return hasChartData;
+  }, [content]);
+
   // Directly render visualization tool envelope if present
   if (typeof content === "string") {
     try {
@@ -315,6 +328,14 @@ const MDX = ({ content }) => {
           components={components}
         />
       </MathJaxContext>
+
+      {/* Add dynamic chart generation if chart data is detected */}
+      {shouldShowChart && (
+        <DynamicChartGenerator
+          content={content}
+          model={model}
+        />
+      )}
     </div>
   );
 };
