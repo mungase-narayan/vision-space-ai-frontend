@@ -34,7 +34,7 @@ export default function ChatMessage({ chat }) {
   };
 
   return (
-    <div className={cn("py-3", isUser ? "bg-background" : "bg-gradient-to-br from-slate-50/80 to-slate-100/60 dark:from-slate-800/70 dark:to-slate-700/50")}>
+    <div className="py-3 bg-background">
       <div className="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row gap-3">
         <div className="flex flex-row gap-2">
           {isUser ? (
@@ -47,7 +47,7 @@ export default function ChatMessage({ chat }) {
                   }
                   alt="User"
                 />
-                <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs">
+                <AvatarFallback className="bg-gradient-to-tr from-sky-400 to-sky-600 text-white font-semibold text-xs shadow-sm">
                   {tab?.userId?.fullName?.charAt(0) ||
                     user?.fullName?.charAt(0) ||
                     "U"}

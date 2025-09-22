@@ -18,6 +18,7 @@ import {
   ImageIcon,
   Loader2,
   Plus,
+  DatabaseZap,
 } from "lucide-react";
 
 import { getBase64, getFileExtensionCategory, readAnyFile } from "@/lib/utils";
@@ -116,8 +117,8 @@ function CreateProject() {
           className="flex items-center justify-start gap-2 !px-4 text-start"
           variant="outline"
         >
-          <Plus size={13} />
-          <span>New Project</span>
+          <DatabaseZap size={13} />
+          <span className="text-xs">Knowledge Base</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[calc(90vw)]">

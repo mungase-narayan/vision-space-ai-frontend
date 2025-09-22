@@ -140,11 +140,20 @@ export default function ChatsSidebar() {
             <Button
               size="sm"
               onClick={addTab}
-              className="flex items-center justify-start gap-2 !px-3 text-start bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-sm border border-primary/20 transition-all duration-200 hover:shadow-md h-8 text-xs font-medium"
+              className="
+    flex items-center justify-start gap-2 !px-3 text-start
+    bg-gradient-to-r from-sky-700 to-sky-900
+    hover:from-sky-800 hover:to-sky-950
+    shadow-sm border border-blue-400/20
+    transition-all duration-200 hover:shadow-md
+    h-8 text-xs font-medium text-white
+  "
             >
               <PlusIcon size={12} />
               <span>New Chat</span>
             </Button>
+
+
             <Button
               size="sm"
               variant="outline"
@@ -367,7 +376,7 @@ export default function ChatsSidebar() {
                 )}
             </div>
           </ScrollArea>
-
+          <Separator />
           <div className="p-3 border-t border-sidebar-border/20 bg-gradient-to-r from-sidebar-accent/10 via-transparent to-sidebar-accent/10">
             <ProfileMenu />
           </div>
