@@ -118,7 +118,7 @@ function CreateProject() {
           variant="outline"
         >
           <DatabaseZap size={13} />
-          <span className="text-xs">Knowledge Base</span>
+          <span className="text-xs">Create Project</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="min-w-[calc(90vw)]">
