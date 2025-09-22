@@ -84,7 +84,7 @@ const HomeV1 = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
           <Button
             size="lg"
-            onClick={() => navigate("/auth/sign-in")}
+            onClick={() => navigate("/chats")}
             className="bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-300"
           >
             <Waves className="w-4 h-4" />
