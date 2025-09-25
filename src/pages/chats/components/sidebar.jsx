@@ -74,8 +74,8 @@ export default function ChatsSidebar() {
   useEffect(() => {
     const filteredChats = searchQuery
       ? chats.filter((chat) =>
-        chat.name.toLowerCase().includes(searchQuery.toLowerCase())
-      )
+          chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+        )
       : chats;
 
     const sortedChats = [...filteredChats].sort(
@@ -153,8 +153,7 @@ export default function ChatsSidebar() {
               <span>New Chat</span>
             </Button>
 
-
-            <Button
+            {/* <Button
               size="sm"
               variant="outline"
               onClick={() => navigate('/maps')}
@@ -162,7 +161,7 @@ export default function ChatsSidebar() {
             >
               <Map size={12} />
               <span>Maps Dashboard</span>
-            </Button>
+            </Button> */}
             <CreateProject />
           </div>
 
@@ -200,12 +199,22 @@ export default function ChatsSidebar() {
                   <div className="flex items-center gap-2">
                     <div className="p-1 rounded-md bg-primary/8 group-hover:bg-primary/15 transition-all duration-200">
                       {openBtns.projectTab ? (
-                        <FolderOpen size={14} strokeWidth={2.5} className="text-primary" />
+                        <FolderOpen
+                          size={14}
+                          strokeWidth={2.5}
+                          className="text-primary"
+                        />
                       ) : (
-                        <Folder size={14} strokeWidth={2.5} className="text-primary" />
+                        <Folder
+                          size={14}
+                          strokeWidth={2.5}
+                          className="text-primary"
+                        />
                       )}
                     </div>
-                    <h1 className="text-xs font-semibold text-sidebar-foreground">Projects</h1>
+                    <h1 className="text-xs font-semibold text-sidebar-foreground">
+                      Projects
+                    </h1>
                   </div>
                   <div className="bg-primary/8 text-primary flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium border border-primary/15">
                     {projects.length}
@@ -231,11 +240,15 @@ export default function ChatsSidebar() {
                         strokeWidth={2.5}
                         className={cn(
                           "text-yellow-500 duration-300 transition-all",
-                          openBtns.pinnedTab ? "rotate-12 scale-110" : "rotate-0 scale-100"
+                          openBtns.pinnedTab
+                            ? "rotate-12 scale-110"
+                            : "rotate-0 scale-100"
                         )}
                       />
                     </div>
-                    <h1 className="text-xs font-semibold text-sidebar-foreground">Pinned</h1>
+                    <h1 className="text-xs font-semibold text-sidebar-foreground">
+                      Pinned
+                    </h1>
                   </div>
                   <div className="bg-yellow-500/8 text-yellow-600 dark:text-yellow-400 flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium border border-yellow-500/15">
                     {pinnedConversations.length}
@@ -266,11 +279,11 @@ export default function ChatsSidebar() {
                         <div className="text-xs text-muted-foreground flex items-center justify-between">
                           <span className="flex text-xs items-center gap-1">
                             {isToday(tab.updatedAt) ||
-                              isYesterday(tab.updatedAt)
+                            isYesterday(tab.updatedAt)
                               ? `${formatDistance(
-                                tab.updatedAt,
-                                new Date()
-                              )}  ago`
+                                  tab.updatedAt,
+                                  new Date()
+                                )}  ago`
                               : format(tab.updatedAt, "MMM dd, yyyy")}
                             {!tab.isCreator && (
                               <ForwardIcon className="size-[8px] text-muted-foreground/50" />
@@ -300,12 +313,22 @@ export default function ChatsSidebar() {
                   <div className="flex items-center gap-2">
                     <div className="p-1 rounded-md bg-blue-500/8 group-hover:bg-blue-500/15 transition-all duration-200">
                       {!openBtns?.recentTab ? (
-                        <Clock12Icon size={14} strokeWidth={2.5} className="text-blue-500" />
+                        <Clock12Icon
+                          size={14}
+                          strokeWidth={2.5}
+                          className="text-blue-500"
+                        />
                       ) : (
-                        <Clock size={14} strokeWidth={2.5} className="text-blue-500" />
+                        <Clock
+                          size={14}
+                          strokeWidth={2.5}
+                          className="text-blue-500"
+                        />
                       )}
                     </div>
-                    <h1 className="text-xs font-semibold text-sidebar-foreground">Recent</h1>
+                    <h1 className="text-xs font-semibold text-sidebar-foreground">
+                      Recent
+                    </h1>
                   </div>
                   <div className="bg-blue-500/8 text-blue-600 dark:text-blue-400 flex items-center justify-center px-2 py-0.5 rounded-full text-xs font-medium border border-blue-500/15">
                     {totalChats}
@@ -349,11 +372,11 @@ export default function ChatsSidebar() {
                                   <div className="text-xs text-muted-foreground flex items-center justify-between">
                                     <span className="flex text-xs items-center gap-1">
                                       {isToday(tab.updatedAt) ||
-                                        isYesterday(tab.updatedAt)
+                                      isYesterday(tab.updatedAt)
                                         ? `${formatDistance(
-                                          tab.updatedAt,
-                                          new Date()
-                                        )}  ago`
+                                            tab.updatedAt,
+                                            new Date()
+                                          )}  ago`
                                         : format(tab.updatedAt, "MMM dd, yyyy")}
                                       {!tab.isCreator && (
                                         <ForwardIcon className="size-[8px] text-muted-foreground/50" />

@@ -1,5 +1,5 @@
 import { siteConfigs } from "@/configs";
-import { Anchor } from "lucide-react";
+import { Rocket } from "lucide-react";
 
 const Logo = () => {
   return (
@@ -16,7 +16,7 @@ const Logo = () => {
           text-white shadow-sm
         "
       >
-        <Anchor className="w-5 h-5" />
+        <Rocket className="w-5 h-5" />
       </div>
       <p
         className="
