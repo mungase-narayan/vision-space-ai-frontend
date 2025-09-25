@@ -1,5 +1,5 @@
 const siteConfigs = {
-  name: "FloatChatAI",
+  name: "VisionSpaceAI",
 };
 
 export default siteConfigs;

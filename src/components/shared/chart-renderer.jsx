@@ -1,10 +1,12 @@
 import React from "react";
 import FallbackChart from "./fallback-chart";
+import createPlotlyComponent from "react-plotly.js/factory";
+import Plotly from "plotly.js-dist-min";
 
 const ENGINE = {
   PLOTLY: "plotly",
   CHARTJS: "chartjs",
-  D3: "d3"
+  D3: "d3",
 };
 
 function ChartJsRenderer({ spec }) {
@@ -16,7 +18,7 @@ function ChartJsRenderer({ spec }) {
     async function load() {
       const [chartJs, chartReact] = await Promise.all([
         import("chart.js"),
-        import("react-chartjs-2")
+        import("react-chartjs-2"),
       ]);
       const {
         CategoryScale,
@@ -27,7 +29,7 @@ function ChartJsRenderer({ spec }) {
         ArcElement,
         Tooltip,
         Legend,
-        Chart
+        Chart,
       } = chartJs;
       Chart.register(
         CategoryScale,
@@ -47,29 +49,47 @@ function ChartJsRenderer({ spec }) {
     };
   }, []);
 
-  if (!components) return <div className="h-10 text-xs text-muted-foreground">Loading chart...</div>;
+  if (!components)
+    return (
+      <div className="h-10 text-xs text-muted-foreground">Loading chart...</div>
+    );
 
   const { Line, Bar, Pie, Doughnut, Scatter } = components;
 
-  // Normalize Chart.js options (support v2-style to v3/v4)
   const normalizedOptions = React.useMemo(() => {
     const next = { responsive: true, maintainAspectRatio: false, ...options };
     if (options?.scales?.yAxes || options?.scales?.xAxes) {
       const yAxes = options.scales.yAxes?.[0] || {};
       const xAxes = options.scales.xAxes?.[0] || {};
       next.scales = {
-        y: { ticks: yAxes.ticks || {}, grid: yAxes.gridLines, title: yAxes.scaleLabel },
-        x: { ticks: xAxes.ticks || {}, grid: xAxes.gridLines, title: xAxes.scaleLabel },
+        y: {
+          ticks: yAxes.ticks || {},
+          grid: yAxes.gridLines,
+          title: yAxes.scaleLabel,
+        },
+        x: {
+          ticks: xAxes.ticks || {},
+          grid: xAxes.gridLines,
+          title: xAxes.scaleLabel,
+        },
       };
     }
     if (options?.title?.text || options?.title?.display) {
       next.plugins = next.plugins || {};
-      next.plugins.title = { display: !!options.title.display, text: options.title.text };
+      next.plugins.title = {
+        display: !!options.title.display,
+        text: options.title.text,
+      };
     }
     return next;
   }, [options]);
 
-  const chartProps = { data, options: normalizedOptions, height: spec?.height || 360, width: options?.width };
+  const chartProps = {
+    data,
+    options: normalizedOptions,
+    height: spec?.height || 360,
+    width: options?.width,
+  };
 
   switch (type) {
     case "bar":
@@ -86,82 +106,33 @@ function ChartJsRenderer({ spec }) {
   }
 }
 
+const Plot = createPlotlyComponent(Plotly);
+
 function PlotlyRenderer({ spec }) {
-  const [Plot, setPlot] = React.useState(null);
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState(null);
-
-  React.useEffect(() => {
-    let mounted = true;
-
-    const loadPlotly = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Try multiple import strategies for better compatibility
-        let PlotComponent;
-        try {
-          const plotlyModule = await import("react-plotly.js");
-          PlotComponent = plotlyModule.default || plotlyModule.Plot || plotlyModule;
-          console.log('Plotly import successful:', !!PlotComponent);
-        } catch (e) {
-          console.error('Failed to import react-plotly.js:', e);
-          throw e;
-        }
-
-        if (mounted && PlotComponent) {
-          setPlot(() => PlotComponent);
-        }
-      } catch (err) {
-        console.error('Failed to load Plotly:', err);
-        if (mounted) {
-          setError(err.message);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
-      }
-    };
-
-    loadPlotly();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
-
   const { data = [], layout = {}, config = {} } = spec || {};
 
-  if (loading) {
-    return <div className="h-10 text-xs text-muted-foreground">Loading chart...</div>;
-  }
-
-  if (error || !Plot) {
-    console.log('Using fallback chart due to Plotly loading issue:', { error, hasPlot: !!Plot });
+  try {
+    return (
+      <Plot
+        data={data}
+        layout={{ autosize: true, ...layout }}
+        config={{ responsive: true, displayModeBar: false, ...config }}
+        style={{ width: "100%", height: layout?.height || 400 }}
+        useResizeHandler
+      />
+    );
+  } catch (err) {
+    console.error("Plotly rendering failed:", err);
     return (
       <div className="space-y-2">
         <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-sm">
           <p>⚠️ Using fallback chart renderer</p>
-          <p className="text-xs text-gray-600">
-            {error ? `Error: ${error}` : 'Plotly component not loaded'}
-          </p>
+          <p className="text-xs text-gray-600">Error: {err.message}</p>
         </div>
         <FallbackChart spec={{ data, layout, config }} />
       </div>
     );
   }
-
-  return (
-    <Plot
-      data={data}
-      layout={{ autosize: true, ...layout }}
-      config={{ responsive: true, displayModeBar: false, ...config }}
-      style={{ width: "100%", height: layout?.height || 400 }}
-      useResizeHandler
-    />
-  );
 }
 
 function D3Renderer({ spec }) {
@@ -179,7 +150,15 @@ function D3Renderer({ spec }) {
 
       while (root.firstChild) root.removeChild(root.firstChild);
 
-      const { type = "bar", data = [], xKey = "x", yKey = "y", width = root.clientWidth || 600, height = 400, margin = { top: 20, right: 20, bottom: 30, left: 40 } } = spec || {};
+      const {
+        type = "bar",
+        data = [],
+        xKey = "x",
+        yKey = "y",
+        width = root.clientWidth || 600,
+        height = 400,
+        margin = { top: 20, right: 20, bottom: 30, left: 40 },
+      } = spec || {};
 
       const svg = d3
         .select(root)
@@ -197,20 +176,22 @@ function D3Renderer({ spec }) {
       if (type === "line") {
         const x = d3
           .scalePoint()
-          .domain(data.map(d => d[xKey]))
+          .domain(data.map((d) => d[xKey]))
           .range([0, innerWidth]);
         const y = d3
           .scaleLinear()
-          .domain([0, d3.max(data, d => Number(d[yKey]) || 0)])
+          .domain([0, d3.max(data, (d) => Number(d[yKey]) || 0)])
           .nice()
           .range([innerHeight, 0]);
 
         const line = d3
           .line()
-          .x(d => x(d[xKey]))
-          .y(d => y(Number(d[yKey]) || 0));
+          .x((d) => x(d[xKey]))
+          .y((d) => y(Number(d[yKey]) || 0));
 
-        g.append("g").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x));
+        g.append("g")
+          .attr("transform", `translate(0,${innerHeight})`)
+          .call(d3.axisBottom(x));
         g.append("g").call(d3.axisLeft(y));
 
         g.append("path")
@@ -222,27 +203,28 @@ function D3Renderer({ spec }) {
       } else {
         const x = d3
           .scaleBand()
-          .domain(data.map(d => d[xKey]))
+          .domain(data.map((d) => d[xKey]))
           .range([0, innerWidth])
           .padding(0.2);
         const y = d3
           .scaleLinear()
-          .domain([0, d3.max(data, d => Number(d[yKey]) || 0)])
+          .domain([0, d3.max(data, (d) => Number(d[yKey]) || 0)])
           .nice()
           .range([innerHeight, 0]);
 
-        g.append("g").attr("transform", `translate(0,${innerHeight})`).call(d3.axisBottom(x));
+        g.append("g")
+          .attr("transform", `translate(0,${innerHeight})`)
+          .call(d3.axisBottom(x));
         g.append("g").call(d3.axisLeft(y));
 
-        g
-          .selectAll("rect")
+        g.selectAll("rect")
           .data(data)
           .enter()
           .append("rect")
-          .attr("x", d => x(d[xKey]))
-          .attr("y", d => y(Number(d[yKey]) || 0))
+          .attr("x", (d) => x(d[xKey]))
+          .attr("y", (d) => y(Number(d[yKey]) || 0))
           .attr("width", x.bandwidth())
-          .attr("height", d => innerHeight - y(Number(d[yKey]) || 0))
+          .attr("height", (d) => innerHeight - y(Number(d[yKey]) || 0))
           .attr("fill", "#3b82f6");
       }
     }
@@ -254,7 +236,9 @@ function D3Renderer({ spec }) {
     };
   }, [spec]);
 
-  return <div ref={ref} style={{ width: "100%", height: spec?.height || 400 }} />;
+  return (
+    <div ref={ref} style={{ width: "100%", height: spec?.height || 400 }} />
+  );
 }
 
 export default function ChartRenderer({ engine, spec }) {
@@ -268,5 +252,3 @@ export default function ChartRenderer({ engine, spec }) {
 }
 
 export { ENGINE };
-
-
