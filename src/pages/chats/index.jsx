@@ -14,7 +14,7 @@ const Chats = ({ tab }) => {
   const printRef = useRef(null);
   const canvasEl = useRef(null);
 
-  const handleAfterPrint = useCallback(() => { }, []);
+  const handleAfterPrint = useCallback(() => {}, []);
   const handleBeforePrint = useCallback(() => {
     return Promise.resolve();
   }, []);
@@ -96,10 +96,10 @@ const Chats = ({ tab }) => {
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {[
-                    "What is an Argo float?",
-                    "Argo float story",
-                    "Read Argo float data",
-                    "Argo float article summary",
+                    "What is EO (Earth Observation) data?",
+                    "Explain ISRO satellite imagery",
+                    "Analyze a sample EO image",
+                    "Summarize EO data trends",
                   ].map((suggestion, index) => (
                     <button
                       key={index}
